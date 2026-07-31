@@ -18,4 +18,10 @@
     <ProjectReference Include="..\Knightage.Platform.Service\Knightage.Platform.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="schemas\**\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

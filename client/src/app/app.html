@@ -1,0 +1,13 @@
+@if (auth.isAuthenticated()) {
+  <nav class="topnav">
+    <span class="brand">Knightage Platform</span>
+    <a routerLink="/tenants" routerLinkActive="active">Tenants</a>
+    <span class="spacer"></span>
+    <span class="user">{{ auth.currentUser()?.displayName }}</span>
+    <button type="button" (click)="auth.logout()">Logout</button>
+  </nav>
+}
+
+<main class="page">
+  <router-outlet />
+</main>

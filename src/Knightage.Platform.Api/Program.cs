@@ -1,9 +1,18 @@
 using System.Text;
+using Knightage.Platform.Core.Interfaces;
+using Knightage.Platform.Infrastructure.Data;
+using Knightage.Platform.Infrastructure.Provisioning;
+using Knightage.Platform.Infrastructure.Repositories;
+using Knightage.Platform.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "wwwroot/browser"
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -29,6 +38,12 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddScoped<ITenantRepository, TenantRepository>();
+builder.Services.AddScoped<ITenantServiceDatabaseRepository, TenantServiceDatabaseRepository>();
+builder.Services.AddScoped<IServiceDatabaseProvisioner, SqlServiceDatabaseProvisioner>();
+builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
@@ -59,8 +74,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Angular client-side routes (e.g. /tenants) aren't real server routes -- fall back to
+// index.html so the Angular router can handle them. Must come after MapControllers so API
+// routes still resolve normally.
+app.MapFallbackToFile("index.html");
 
 app.Run();

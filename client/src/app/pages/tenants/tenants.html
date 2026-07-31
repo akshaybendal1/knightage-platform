@@ -1,0 +1,87 @@
+<h1>Tenants</h1>
+
+@if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+}
+
+<form class="card wide" (ngSubmit)="provision()">
+  <h2>Provision a tenant</h2>
+  <p class="hint" style="margin-top: -0.25rem; margin-bottom: 0.75rem;">
+    New organizations are provisioned automatically on registration in knightage-identity. Use
+    this to retry a provisioning failure or backfill an existing organization.
+  </p>
+  <div class="field">
+    <label for="organizationId">Organization ID</label>
+    <input id="organizationId" name="organizationId" type="text" [(ngModel)]="organizationId" required placeholder="GUID from knightage-identity" />
+  </div>
+  <div class="field">
+    <label for="organizationName">Organization name</label>
+    <input id="organizationName" name="organizationName" type="text" [(ngModel)]="organizationName" required />
+  </div>
+  <button type="submit" [disabled]="provisioning()">
+    {{ provisioning() ? 'Provisioning...' : 'Provision' }}
+  </button>
+</form>
+
+@if (loading()) {
+  <p class="hint">Loading...</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (tenant of tenants(); track tenant.id) {
+        <tr>
+          <td>{{ tenant.name }}</td>
+          <td>{{ tenant.slug }}</td>
+          <td><span class="badge">{{ tenant.status }}</span></td>
+          <td>{{ tenant.createdAtUtc | slice: 0 : 10 }}</td>
+          <td><button type="button" class="secondary" (click)="viewTenant(tenant)">View</button></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="hint">No tenants provisioned yet.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+@if (selectedDetail(); as detail) {
+  <div class="card wide">
+    <h2>{{ detail.tenant.name }}</h2>
+    <p class="hint">Organization ID: {{ detail.tenant.organizationId }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Database</th>
+          <th>Status</th>
+          <th>Provisioned</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (db of detail.databases; track db.id) {
+          <tr>
+            <td>{{ db.serviceName }}</td>
+            <td>{{ db.databaseName }}</td>
+            <td><span class="badge">{{ db.status }}</span></td>
+            <td>{{ db.createdAtUtc | slice: 0 : 10 }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="hint">No service databases provisioned yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <button type="button" class="secondary" (click)="closeDetail()">Close</button>
+  </div>
+}

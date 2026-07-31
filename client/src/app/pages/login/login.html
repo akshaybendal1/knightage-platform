@@ -1,0 +1,43 @@
+<div class="login-wrap">
+  <form class="card" (ngSubmit)="submit()">
+    <h2>{{ mode() === 'login' ? 'Log in to Knightage Platform' : 'Create your organization' }}</h2>
+
+    @if (mode() === 'register') {
+      <div class="field">
+        <label for="organizationName">Organization name</label>
+        <input id="organizationName" name="organizationName" type="text" [(ngModel)]="organizationName" required />
+      </div>
+      <div class="field">
+        <label for="displayName">Your name</label>
+        <input id="displayName" name="displayName" type="text" [(ngModel)]="displayName" required />
+      </div>
+    }
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" [(ngModel)]="email" required />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" [(ngModel)]="password" required minlength="8" />
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Please wait...' : mode() === 'login' ? 'Log in' : 'Create organization' }}
+    </button>
+
+    <p class="hint" style="margin-top: 0.75rem;">
+      @if (mode() === 'login') {
+        New here?
+        <a href="javascript:void(0)" (click)="toggleMode()">Create an organization</a>
+      } @else {
+        Already have an account?
+        <a href="javascript:void(0)" (click)="toggleMode()">Log in instead</a>
+      }
+    </p>
+  </form>
+</div>
