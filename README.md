@@ -17,7 +17,7 @@ This is part of the Knightage multi-system platform:
 
 ## Status
 
-Phase 0 scaffold only — no business logic yet. This establishes a buildable ASP.NET Core 8 Web API skeleton following the platform's layered convention.
+Phase 0 scaffold plus JWT bearer authentication — this service now validates access tokens issued by `knightage-identity` (no tenant directory / provisioning logic yet).
 
 ## Project layout
 
@@ -25,6 +25,10 @@ Phase 0 scaffold only — no business logic yet. This establishes a buildable AS
 - `src/Knightage.Platform.Core` — domain models and interfaces (tenant directory entries, provisioning jobs)
 - `src/Knightage.Platform.Infrastructure` — data access (Dapper + SQL Server)
 - `src/Knightage.Platform.Service` — provisioning and migration orchestration logic
+
+## Auth
+
+This service does not issue tokens — it only validates JWTs issued by `knightage-identity`. `appsettings.json`'s `Jwt:Key`/`Issuer`/`Audience` must match `knightage-identity`'s exactly (shared HMAC secret for now; revisit before this crosses a real network boundary in production). `GET /api/health/secure` is `[Authorize]`-protected and echoes the `sub`/`org_id` claims back, to confirm a token from `knightage-identity`'s `/api/auth/login` is accepted here.
 
 ## Running locally
 
@@ -35,4 +39,4 @@ dotnet build
 dotnet run --project src/Knightage.Platform.Api
 ```
 
-Swagger UI is available at `/swagger` in development.
+Swagger UI is available at `/swagger` in development, with a "Bearer" auth button to paste a token obtained from `knightage-identity`.
