@@ -20,3 +20,14 @@ CREATE TABLE Leads (
     Source NVARCHAR(50) NOT NULL DEFAULT 'Manual',
     CreatedAtUtc DATETIME2 NOT NULL
 );
+
+CREATE TABLE LeadActivities (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    LeadId UNIQUEIDENTIFIER NOT NULL REFERENCES Leads(Id),
+    Type NVARCHAR(50) NOT NULL DEFAULT 'Note',
+    Content NVARCHAR(2000) NOT NULL,
+    CreatedByUserId NVARCHAR(100) NULL,
+    CreatedAtUtc DATETIME2 NOT NULL
+);
+
+CREATE INDEX IX_LeadActivities_LeadId ON LeadActivities(LeadId);
