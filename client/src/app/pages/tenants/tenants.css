@@ -1,0 +1,14 @@
+.sub-Active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sub-ReadOnly {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sub-Disabled {
+  background: #fee2e2;
+  color: #991b1b;
+}

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Tenant, TenantDetail, TenantProvisioningResult } from './models';
+import { Subscription, TenantDetail, TenantListItem, TenantProvisioningResult } from './models';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +9,7 @@ export class PlatformApi {
   constructor(private readonly http: HttpClient) {}
 
   getTenants() {
-    return this.http.get<Tenant[]>('/api/tenants');
+    return this.http.get<TenantListItem[]>('/api/tenants');
   }
 
   getTenant(organizationId: string) {
@@ -18,5 +18,9 @@ export class PlatformApi {
 
   provisionTenant(payload: { organizationId: string; organizationName: string }) {
     return this.http.post<TenantProvisioningResult>('/api/tenants/provision', payload);
+  }
+
+  updateSubscription(organizationId: string, payload: { startDate: string; endDate: string; gracePeriodDays: number; notes?: string }) {
+    return this.http.post<Subscription>(`/api/vendors/${organizationId}/subscription`, payload);
   }
 }

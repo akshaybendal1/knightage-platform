@@ -42,6 +42,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<ITenantServiceDatabaseRepository, TenantServiceDatabaseRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IServiceDatabaseProvisioner, SqlServiceDatabaseProvisioner>();
 builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 

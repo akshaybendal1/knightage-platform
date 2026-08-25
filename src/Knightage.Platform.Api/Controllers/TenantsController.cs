@@ -1,5 +1,6 @@
 using Knightage.Platform.Api.Contracts;
 using Knightage.Platform.Core.Interfaces;
+using Knightage.Platform.Core.Subscriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,15 +14,18 @@ public class TenantsController : ControllerBase
     private readonly IProvisioningService _provisioningService;
     private readonly ITenantRepository _tenantRepository;
     private readonly ITenantServiceDatabaseRepository _databaseRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
 
     public TenantsController(
         IProvisioningService provisioningService,
         ITenantRepository tenantRepository,
-        ITenantServiceDatabaseRepository databaseRepository)
+        ITenantServiceDatabaseRepository databaseRepository,
+        ISubscriptionRepository subscriptionRepository)
     {
         _provisioningService = provisioningService;
         _tenantRepository = tenantRepository;
         _databaseRepository = databaseRepository;
+        _subscriptionRepository = subscriptionRepository;
     }
 
     [HttpPost("provision")]
@@ -31,8 +35,25 @@ public class TenantsController : ControllerBase
         return Ok(new { tenant = result.Tenant, databases = result.Databases });
     }
 
+    // Lists every tenant across every organization, with its subscription status, so a
+    // PlatformAdmin can see every vendor's state at a glance rather than clicking into each
+    // one -- PlatformAdmin only. A regular user's own tenant info comes from
+    // GetByOrganizationId below, which every business app's tenant-resolution middleware
+    // already depends on and stays open to any authenticated user.
+    [Authorize(Roles = "PlatformAdmin")]
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _tenantRepository.GetAllAsync());
+    public async Task<IActionResult> GetAll()
+    {
+        var tenants = await _tenantRepository.GetAllAsync();
+        var rows = new List<object>(tenants.Count);
+        foreach (var tenant in tenants)
+        {
+            var subscriptionRecord = await _subscriptionRepository.GetByTenantIdAsync(tenant.Id);
+            rows.Add(new { tenant, subscription = BuildSubscriptionSummary(subscriptionRecord) });
+        }
+
+        return Ok(rows);
+    }
 
     [HttpGet("{organizationId:guid}")]
     public async Task<IActionResult> GetByOrganizationId(Guid organizationId)
@@ -44,6 +65,17 @@ public class TenantsController : ControllerBase
         }
 
         var databases = await _databaseRepository.GetByTenantIdAsync(tenant.Id);
-        return Ok(new { tenant, databases });
+        var subscriptionRecord = await _subscriptionRepository.GetByTenantIdAsync(tenant.Id);
+
+        return Ok(new { tenant, databases, subscription = BuildSubscriptionSummary(subscriptionRecord) });
     }
+
+    private static object BuildSubscriptionSummary(Core.Models.Subscription? record) => new
+    {
+        status = SubscriptionStatusCalculator.Compute(record?.EndDate, record?.GracePeriodDays ?? 0),
+        startDate = record?.StartDate,
+        endDate = record?.EndDate,
+        gracePeriodDays = record?.GracePeriodDays,
+        notes = record?.Notes,
+    };
 }

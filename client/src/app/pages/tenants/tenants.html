@@ -32,22 +32,26 @@
         <th>Name</th>
         <th>Slug</th>
         <th>Status</th>
+        <th>Subscription</th>
+        <th>Ends</th>
         <th>Created</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      @for (tenant of tenants(); track tenant.id) {
+      @for (row of tenants(); track row.tenant.id) {
         <tr>
-          <td>{{ tenant.name }}</td>
-          <td>{{ tenant.slug }}</td>
-          <td><span class="badge">{{ tenant.status }}</span></td>
-          <td>{{ tenant.createdAtUtc | slice: 0 : 10 }}</td>
-          <td><button type="button" class="secondary" (click)="viewTenant(tenant)">View</button></td>
+          <td>{{ row.tenant.name }}</td>
+          <td>{{ row.tenant.slug }}</td>
+          <td><span class="badge">{{ row.tenant.status }}</span></td>
+          <td><span class="badge" [class]="'sub-' + row.subscription.status">{{ row.subscription.status }}</span></td>
+          <td>{{ row.subscription.endDate ? (row.subscription.endDate | slice: 0 : 10) : '—' }}</td>
+          <td>{{ row.tenant.createdAtUtc | slice: 0 : 10 }}</td>
+          <td><button type="button" class="secondary" (click)="viewTenant(row.tenant)">View</button></td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="5" class="hint">No tenants provisioned yet.</td>
+          <td colspan="7" class="hint">No tenants provisioned yet.</td>
         </tr>
       }
     </tbody>
@@ -58,6 +62,51 @@
   <div class="card wide">
     <h2>{{ detail.tenant.name }}</h2>
     <p class="hint">Organization ID: {{ detail.tenant.organizationId }}</p>
+
+    <h3>Subscription</h3>
+    @if (editingSubscription()) {
+      <div class="field">
+        <label for="subStartDate">Start date</label>
+        <input id="subStartDate" name="subStartDate" type="date" [(ngModel)]="subStartDate" />
+      </div>
+      <div class="field">
+        <label for="subEndDate">End date</label>
+        <input id="subEndDate" name="subEndDate" type="date" [(ngModel)]="subEndDate" />
+      </div>
+      <div class="field">
+        <label for="subGracePeriodDays">Grace period (days)</label>
+        <input id="subGracePeriodDays" name="subGracePeriodDays" type="number" min="0" [(ngModel)]="subGracePeriodDays" />
+        <span class="hint">The vendor's apps go read-only the day after End date, for this many days, then fully disabled.</span>
+      </div>
+      <div class="field">
+        <label for="subNotes">Notes</label>
+        <input id="subNotes" name="subNotes" type="text" [(ngModel)]="subNotes" />
+      </div>
+      <button type="button" [disabled]="savingSubscription()" (click)="saveSubscription()">
+        {{ savingSubscription() ? 'Saving...' : 'Save subscription' }}
+      </button>
+      <button type="button" class="secondary" (click)="cancelEditSubscription()">Cancel</button>
+    } @else {
+      <p>
+        Status: <span class="badge" [class]="'sub-' + detail.subscription.status">{{ detail.subscription.status }}</span>
+      </p>
+      @if (detail.subscription.endDate) {
+        <p class="hint">
+          {{ detail.subscription.startDate | slice: 0 : 10 }} &rarr; {{ detail.subscription.endDate | slice: 0 : 10 }}
+          ({{ detail.subscription.gracePeriodDays }} day grace period)
+        </p>
+        @if (detail.subscription.notes) {
+          <p class="hint">{{ detail.subscription.notes }}</p>
+        }
+      } @else {
+        <p class="hint">No subscription set yet -- treated as Active/unrestricted.</p>
+      }
+      <button type="button" class="secondary" (click)="startEditSubscription()">
+        {{ detail.subscription.endDate ? 'Edit subscription' : 'Set subscription' }}
+      </button>
+    }
+
+    <h3>Service databases</h3>
     <table>
       <thead>
         <tr>

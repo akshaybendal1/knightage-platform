@@ -21,9 +21,25 @@ export interface TenantProvisioningResult {
   databases: TenantServiceDatabase[];
 }
 
+export type SubscriptionStatus = 'Active' | 'ReadOnly' | 'Disabled';
+
+export interface Subscription {
+  status: SubscriptionStatus;
+  startDate: string | null;
+  endDate: string | null;
+  gracePeriodDays: number | null;
+  notes: string | null;
+}
+
+export interface TenantListItem {
+  tenant: Tenant;
+  subscription: Subscription;
+}
+
 export interface TenantDetail {
   tenant: Tenant;
   databases: TenantServiceDatabase[];
+  subscription: Subscription;
 }
 
 export interface AuthResult {
