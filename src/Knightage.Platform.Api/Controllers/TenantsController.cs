@@ -55,9 +55,22 @@ public class TenantsController : ControllerBase
         return Ok(rows);
     }
 
+    // Open to any authenticated user, but only for their OWN organization -- every business
+    // app's tenant-resolution middleware calls this with the caller's own org_id claim, so
+    // that legitimate path is unaffected. Without this check, any authenticated user could
+    // read any *other* organization's tenant/database info just by guessing/knowing its ID.
     [HttpGet("{organizationId:guid}")]
     public async Task<IActionResult> GetByOrganizationId(Guid organizationId)
     {
+        if (!User.IsInRole("PlatformAdmin"))
+        {
+            var callerOrgIdClaim = User.FindFirst("org_id")?.Value;
+            if (!Guid.TryParse(callerOrgIdClaim, out var callerOrganizationId) || callerOrganizationId != organizationId)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only look up your own organization's tenant info." });
+            }
+        }
+
         var tenant = await _tenantRepository.GetByOrganizationIdAsync(organizationId);
         if (tenant is null)
         {
