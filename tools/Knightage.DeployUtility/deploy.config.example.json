@@ -1,0 +1,30 @@
+{
+  "appName": "knightage-platform",
+  "localPath": "C:\\builds\\knightage-platform\\publish",
+  "workDir": "./.deploy-work",
+
+  "ftp": {
+    "host": "ftp.example.com",
+    "port": 21,
+    "username": "deploy-user",
+    "password": "REPLACE_ME",
+    "useSsl": true,
+    "remotePath": "/site/knightage-platform"
+  },
+
+  "configFilesToPreserve": [
+    "web.config"
+  ],
+
+  "database": {
+    "server": "sql.example.com",
+    "database": "knightage-platform",
+    "userId": "deploy-sql-user",
+    "password": "REPLACE_ME",
+    "trustServerCertificate": true
+  },
+
+  "dbScripts": [
+    "../../sql/002_subscriptions.sql"
+  ]
+}

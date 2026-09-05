@@ -34,6 +34,7 @@ Verified live: two separate organizations registered through `knightage-identity
 - `src/Knightage.Platform.Infrastructure` — data access (Dapper + SQL Server) and the SQL Server database/schema provisioner
 - `src/Knightage.Platform.Service` — `ProvisioningService`, the orchestration logic
 - `client/` — Angular ops UI (login + Tenants page), built into `src/Knightage.Platform.Api/wwwroot`
+- `tools/Knightage.DeployUtility` — config-driven CLI that automates the manual zip/FTP/DB-script deploy steps from each service's `DEPLOYMENT.md`. Not specific to this service — one config file per Knightage app. See its own README.
 
 ## API
 
