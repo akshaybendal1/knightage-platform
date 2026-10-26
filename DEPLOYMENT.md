@@ -1,5 +1,7 @@
 # Deploying to IIS
 
+> **Superseded (2026-10-26):** this describes an older design (environment-variable config, per-tenant databases). Production uses the server's preserved `appsettings.json`, shared databases and `knightage-deploy`. Follow `docs/SOP.md` and `knightage-deploy/docs/SOP-Operations.md`; this file is kept for history.
+
 This service ships an API plus a bundled Angular ops UI (built into
 `src/Knightage.Platform.Api/wwwroot`). It's also the only service whose SQL
 login needs elevated rights — it provisions a brand-new database per
