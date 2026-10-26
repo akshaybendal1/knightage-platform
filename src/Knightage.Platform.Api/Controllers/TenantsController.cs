@@ -213,9 +213,29 @@ public class TenantsController : ControllerBase
         }
     }
 
+    // Two legitimate callers: knightage-identity right after sign-up (with the new Owner's own token, before the
+    // organization has a tenant), and a PlatformAdmin re-running provisioning from the Tenants page. Anyone else
+    // could otherwise create tenants for arbitrary organization ids, or switch a service the PlatformAdmin removed
+    // back on for their own organization (ProvisionAsync adds every missing service row as Provisioned).
     [HttpPost("provision")]
     public async Task<IActionResult> Provision(ProvisionTenantRequest request, CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("PlatformAdmin"))
+        {
+            var callerOrgIdClaim = User.FindFirst("org_id")?.Value;
+            if (!Guid.TryParse(callerOrgIdClaim, out var callerOrganizationId)
+                || callerOrganizationId != request.OrganizationId
+                || !User.IsInRole("Owner"))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Only a platform administrator can set up another organization." });
+            }
+
+            if (await _tenantRepository.GetByOrganizationIdAsync(request.OrganizationId) is not null)
+            {
+                return Conflict(new { message = "This organization is already set up. Ask a platform administrator to change its services." });
+            }
+        }
+
         var result = await _provisioningService.ProvisionAsync(request.OrganizationId, request.OrganizationName, cancellationToken);
         return Ok(new { tenant = result.Tenant, databases = result.Databases });
     }
