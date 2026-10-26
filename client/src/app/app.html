@@ -1,13 +1,91 @@
-@if (auth.isAuthenticated()) {
-  <nav class="topnav">
-    <span class="brand">Knightage Platform</span>
-    <a routerLink="/tenants" routerLinkActive="active">Tenants</a>
-    <span class="spacer"></span>
-    <span class="user">{{ auth.currentUser()?.displayName }}</span>
-    <button type="button" (click)="auth.logout()">Logout</button>
-  </nav>
-}
+@if (showShell()) {
+  <div class="shell">
+    <div class="sidebar-backdrop" [class.visible]="sidebarOpen()" (click)="closeSidebar()"></div>
 
-<main class="page">
+    <aside class="sidebar" [class.open]="sidebarOpen()">
+      <div class="sidebar-brand">
+        <a routerLink="/" class="brand-link" (click)="closeSidebar()">
+          <span class="brand-text">Platform</span>
+        </a>
+        @if (organizationName()) {
+          <span class="sidebar-org-name" [title]="organizationName()">{{ organizationName() }}</span>
+        }
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <a routerLink="/services" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
+          <i class="fas fa-grip"></i>
+          <span>Services</span>
+        </a>
+        @if (auth.currentUser()?.role === 'PlatformAdmin') {
+          <a routerLink="/tenants" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
+            <i class="fas fa-building"></i>
+            <span>Tenants</span>
+          </a>
+          <a routerLink="/plans" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
+            <i class="fas fa-tags"></i>
+            <span>Plans</span>
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="icon-btn sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <a routerLink="/" class="topbar-brand">
+            <span class="brand-text">Platform</span>
+          </a>
+          @if (organizationName()) {
+            <span class="topbar-org-name" [title]="organizationName()">{{ organizationName() }}</span>
+          }
+        </div>
+
+        <div class="topbar-right">
+          <button
+            type="button"
+            class="icon-btn"
+            (click)="theme.toggle()"
+            [title]="theme.current() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+          >
+            <i class="fa" [class.fa-sun]="theme.current() === 'dark'" [class.fa-moon]="theme.current() === 'light'"></i>
+          </button>
+          <div class="user-menu">
+            <button type="button" class="user-menu-trigger" (click)="toggleUserMenu($event)">
+              <span class="user-avatar">{{ initials() }}</span>
+              <span class="user-name">
+                <span class="user-greeting">Hi,</span>
+                <span class="user-display-name">{{ auth.currentUser()?.displayName }}</span>
+              </span>
+            </button>
+            <div class="dropdown-menu user-dropdown" [class.show]="userMenuOpen()">
+              <div class="user-dropdown-header">
+                <span class="user-avatar user-avatar-lg">{{ initials() }}</span>
+                <div>
+                  <div class="user-dropdown-name">{{ auth.currentUser()?.displayName }}</div>
+                  <div class="user-dropdown-email">{{ auth.currentUser()?.email }}</div>
+                  <span class="badge badge-secondary mt-1">{{ auth.currentUser()?.role }}</span>
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="auth.logout()">Logout</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <router-outlet />
+      </main>
+
+      <footer class="footer">
+        <span class="copyright">Knightage Platform</span>
+      </footer>
+    </div>
+  </div>
+} @else {
   <router-outlet />
-</main>
+}

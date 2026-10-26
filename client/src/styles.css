@@ -1,148 +1,470 @@
-* {
-  box-sizing: border-box;
+/* ============================================================
+   Design system -- knightage-platform
+   Ported from knightage-crm's design system (same component layer,
+   same bootstrap.min.css + Font Awesome base) with one deliberate
+   change: --accent is indigo/blue instead of CRM's orange, so the
+   two apps are visually distinguishable as separate spaces while
+   staying structurally identical. Everything else (neutral scale,
+   success/danger/warning semantics, radius, spacing) is unchanged
+   from CRM on purpose -- these are siblings, not a reskin.
+
+   Reference measurements: cards/inputs/buttons/badges all share one
+   6px radius; separation between surfaces comes from a 1px border,
+   never a shadow; accent is the one primary color, used liberally
+   (buttons, active nav, one badge variant) rather than confined to
+   one spot.
+   ============================================================ */
+
+:root {
+  --bg-page: #f3f4f8;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #ececf2;
+  --border-subtle: #e5e5e5;
+  --text-primary: #171717;
+  --text-muted: #737373;
+
+  --accent: #4f6df5;
+  --accent-soft: rgba(79, 109, 245, 0.1);
+  --success: #00c951;
+  --success-soft: rgba(0, 201, 81, 0.1);
+  --danger: #fb2c36;
+  --danger-soft: rgba(251, 44, 54, 0.1);
+  --warning: #f0b100;
+  --warning-soft: rgba(240, 177, 0, 0.1);
+
+  --badge-purple-bg: #ede9fe;
+  --badge-purple-text: #5b21b6;
+
+  --radius: 6px;
 }
 
+/* Dark: only the neutral scale inverts -- accent/success/danger/warning stay
+   identical to light mode, same as CRM's dark theme. */
+:root[data-theme='dark'] {
+  --bg-page: #0b1220;
+  --bg-surface: #1a2540;
+  --bg-surface-2: #232f4d;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --text-primary: #e5e9f0;
+  --text-muted: #8b93a7;
+
+  --badge-purple-bg: rgba(139, 92, 246, 0.18);
+  --badge-purple-text: #c4b5fd;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+html,
 body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+  max-width: 100%;
+}
+
+/* Horizontal-overflow guard lives on the content regions instead of html/body:
+   setting a non-visible overflow-x on html or body makes the browser treat it
+   as a scroll container (the CSS overflow spec pairs overflow-x/overflow-y),
+   which breaks position:sticky for every descendant -- including the topbar. */
+.page-content,
+.login-wrap {
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--accent);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.row {
+  --bs-gutter-y: 1rem;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+
+.card,
+.card-round {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  box-shadow: none;
+  color: var(--text-primary);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 20px;
+  color: var(--text-primary);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: #f3f4f6;
-  color: #111827;
+  color: var(--text-primary);
 }
 
-h1 {
-  font-size: 1.5rem;
-  margin: 0 0 1rem;
+.card-body {
+  padding: 20px;
+  color: var(--text-primary);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
+@media (max-width: 767.98px) {
+  .card-header {
+    padding: 12px 16px;
+  }
+
+  .card-body {
+    padding: 14px 16px;
+  }
 }
 
-th,
-td {
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  border-radius: var(--radius);
+  padding: 8px 14px;
   font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: filter 0.15s ease;
 }
 
-th {
-  background: #f9fafb;
-  font-weight: 600;
-  color: #374151;
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 0.8125rem;
 }
 
-.card {
-  background: #fff;
-  border-radius: 6px;
-  padding: 1rem 1.25rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
-  max-width: 480px;
-}
-
-.card.wide {
-  max-width: 700px;
-}
-
-.card h2 {
-  font-size: 1.05rem;
-  margin: 0 0 0.75rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.field input,
-.field select,
-.field textarea {
-  padding: 0.4rem 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-button {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-button:disabled {
-  background: #9ca3af;
+.btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-button.secondary {
-  background: #6b7280;
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
 }
 
-button.secondary:hover {
-  background: #4b5563;
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.93);
 }
+
+.btn-label-secondary,
+.btn-label-light {
+  background: var(--bg-surface-2);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.btn-label-secondary:hover:not(:disabled),
+.btn-label-light:hover:not(:disabled) {
+  background: var(--border-subtle);
+}
+
+.btn-label-info {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
+}
+
+.btn-label-info:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  display: inline-block;
+}
+
+.form-control,
+.form-select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.form-control-sm,
+.form-select-sm {
+  padding: 5px 10px;
+  font-size: 0.8125rem;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: var(--bg-surface);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-check-input {
+  accent-color: var(--accent);
+}
+
+/* Show/hide toggle button overlaid on a password input -- the input needs
+   right padding cleared for the button so typed text never runs under it. */
+.password-field {
+  position: relative;
+}
+
+.password-field .form-control {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+
+.table {
+  --bs-table-bg: var(--bg-surface);
+  --bs-table-color: var(--text-primary);
+  --bs-table-striped-bg: var(--bg-surface-2);
+  --bs-table-striped-color: var(--text-primary);
+  color: var(--text-primary);
+  margin-bottom: 0;
+}
+
+.table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-color: var(--border-subtle);
+  padding: 10px 12px;
+}
+
+.table td {
+  border-color: var(--border-subtle);
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+/* Bootstrap tables have no built-in small-screen layout -- .table-responsive
+   only adds horizontal scrolling, which on a phone means every column past
+   the first one or two is cut off and has to be scrolled to sideways. Tables
+   opted into this class render each row as a stacked card below 768px, with
+   each cell's data-label attribute shown as a small heading above its value. */
+@media (max-width: 767.98px) {
+  .table-card-mobile thead {
+    display: none;
+  }
+
+  .table-card-mobile,
+  .table-card-mobile tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .table-card-mobile tr {
+    display: block;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .table-card-mobile td {
+    display: block;
+    border: none;
+    padding: 0.3rem 0;
+  }
+
+  .table-card-mobile td[data-label] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+
+  .table-card-mobile td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+
+  .table-card-mobile td[data-label] .form-control,
+  .table-card-mobile td[data-label] .form-select {
+    width: 100%;
+  }
+
+  .table-card-mobile td[data-label] .badge {
+    margin-left: 0;
+  }
+}
+
+/* The actions cell is the last column and has no explicit width, so once two
+   buttons plus their margin exceed it, they wrap onto separate lines instead
+   of staying aligned on one row. */
+tr td:last-child {
+  white-space: nowrap;
+}
+
+td a + button,
+td button + button {
+  margin-left: 0.4rem;
+}
+
+/* ============================================================
+   Badges -- subtle tint + solid text + matching border.
+   ============================================================ */
 
 .badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: #dbeafe;
-  color: #1e40af;
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border: 1px solid transparent;
 }
 
-.error {
-  color: #b91c1c;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+.badge-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
-.hint {
-  color: #6b7280;
-  font-size: 0.8rem;
+.badge-success {
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: var(--success);
 }
 
-.toolbar {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  margin-bottom: 1rem;
+.badge-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
-.forms-row {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+.badge-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-color: var(--warning);
 }
 
-.line-item-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 0.5rem;
-  align-items: end;
-  margin-bottom: 0.5rem;
+.badge-secondary {
+  background: var(--bg-surface-2);
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+}
+
+/* ============================================================
+   Alerts
+   ============================================================ */
+
+.alert-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+}
+
+/* ============================================================
+   Dropdown menu (the topbar user menu is the only consumer)
+   ============================================================ */
+
+.dropdown-menu {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+}
+
+.dropdown-item {
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.dropdown-divider {
+  border-color: var(--border-subtle);
+  margin: 6px 0;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.footer {
+  background: var(--bg-page);
+  color: var(--text-muted);
 }

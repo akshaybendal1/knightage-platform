@@ -1,0 +1,93 @@
+<h1>Plans</h1>
+
+@if (errorMessage()) {
+  <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+}
+
+<div class="card mb-4">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h2 class="card-title">Pricing tiers</h2>
+    @if (!creating() && !editingId()) {
+      <button type="button" class="btn btn-sm btn-primary" (click)="startCreate()">+ New plan</button>
+    }
+  </div>
+  <div class="card-body">
+    @if (loading()) {
+      <p class="text-muted mb-0">Loading...</p>
+    } @else {
+      <table class="table table-hover table-card-mobile">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Max users</th>
+            <th>Max records</th>
+            <th>Price/mo</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (plan of plans(); track plan.id) {
+            <tr>
+              <td data-label="Name">{{ plan.name }}</td>
+              <td data-label="Max users">{{ plan.maxUsers ?? 'Unlimited' }}</td>
+              <td data-label="Max records">{{ plan.maxRecords ?? 'Unlimited' }}</td>
+              <td data-label="Price/mo">{{ plan.priceMonthly !== null ? ('₹' + plan.priceMonthly) : 'Contact us' }}</td>
+              <td data-label="Status">
+                @if (plan.isActive) {
+                  <span class="badge badge-success">Active</span>
+                } @else {
+                  <span class="badge badge-secondary">Hidden</span>
+                }
+              </td>
+              <td>
+                <button type="button" class="btn btn-sm btn-label-secondary" (click)="startEdit(plan)">Edit</button>
+                <button type="button" class="btn btn-sm btn-label-secondary" [disabled]="saving()" (click)="toggleActive(plan)">
+                  {{ plan.isActive ? 'Hide' : 'Unhide' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-muted">No plans yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+@if (creating() || editingId()) {
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2 class="card-title">{{ editingId() ? 'Edit plan' : 'New plan' }}</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-group mb-3">
+        <label class="form-label" for="planName">Name</label>
+        <input id="planName" name="planName" type="text" class="form-control" [(ngModel)]="formName" required />
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="planMaxUsers">Max users</label>
+        <input id="planMaxUsers" name="planMaxUsers" type="number" min="1" class="form-control" [(ngModel)]="formMaxUsers" placeholder="Leave blank for unlimited" />
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="planMaxRecords">Max records</label>
+        <input id="planMaxRecords" name="planMaxRecords" type="number" min="1" class="form-control" [(ngModel)]="formMaxRecords" placeholder="Leave blank for unlimited" />
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="planPrice">Price per month (₹)</label>
+        <input id="planPrice" name="planPrice" type="number" min="0" step="0.01" class="form-control" [(ngModel)]="formPriceMonthly" placeholder="Leave blank for 'Contact us'" />
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="planSortOrder">Sort order</label>
+        <input id="planSortOrder" name="planSortOrder" type="number" class="form-control" [(ngModel)]="formSortOrder" />
+      </div>
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
+        {{ saving() ? 'Saving...' : 'Save plan' }}
+      </button>
+      <button type="button" class="btn btn-label-secondary" [disabled]="saving()" (click)="cancelForm()">Cancel</button>
+    </div>
+  </div>
+}

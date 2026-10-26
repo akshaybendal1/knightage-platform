@@ -51,6 +51,8 @@
               }
             ],
             "styles": [
+              "public/theme/css/bootstrap.min.css",
+              "public/theme/css/fonts.min.css",
               "src/styles.css"
             ]
           },

@@ -23,7 +23,8 @@ public class ClientConfigController : ControllerBase
     {
         var identityBaseUrl = _configuration["Client:IdentityBaseUrl"]
             ?? throw new InvalidOperationException("Client:IdentityBaseUrl is not configured.");
+        var googleClientId = _configuration["Google:ClientId"];
 
-        return Ok(new { identityBaseUrl });
+        return Ok(new { identityBaseUrl, googleClientId = string.IsNullOrWhiteSpace(googleClientId) ? null : googleClientId });
     }
 }

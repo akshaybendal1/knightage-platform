@@ -1,43 +1,103 @@
 <div class="login-wrap">
-  <form class="card" (ngSubmit)="submit()">
-    <h2>{{ mode() === 'login' ? 'Log in to Knightage Platform' : 'Create your organization' }}</h2>
-
-    @if (mode() === 'register') {
-      <div class="field">
-        <label for="organizationName">Organization name</label>
-        <input id="organizationName" name="organizationName" type="text" [(ngModel)]="organizationName" required />
+  <div class="login-card card">
+    <div class="card-body">
+      <div class="login-wordmark">
+        <span class="login-wordmark-primary">Knightage</span><span class="login-wordmark-accent">Platform</span>
       </div>
-      <div class="field">
-        <label for="displayName">Your name</label>
-        <input id="displayName" name="displayName" type="text" [(ngModel)]="displayName" required />
+
+      <div [style.display]="pendingGoogleIdToken() ? 'none' : 'block'">
+        <h2 class="login-heading">{{ mode() === 'login' ? 'Log in to Knightage Platform' : 'Create your organization' }}</h2>
+        <form (ngSubmit)="submit()">
+          @if (mode() === 'register') {
+            <div class="form-group mb-3">
+              <label class="form-label" for="organizationName">Organization name</label>
+              <input id="organizationName" name="organizationName" type="text" class="form-control" [(ngModel)]="organizationName" required />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="displayName">Your name</label>
+              <input id="displayName" name="displayName" type="text" class="form-control" [(ngModel)]="displayName" required />
+            </div>
+          }
+          <div class="form-group mb-3">
+            <label class="form-label" for="email">Email</label>
+            <input id="email" name="email" type="email" class="form-control" [(ngModel)]="email" required />
+          </div>
+          <div class="form-group mb-4">
+            <label class="form-label" for="password">Password</label>
+            <div class="password-field">
+              <input
+                id="password"
+                name="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                class="form-control"
+                [(ngModel)]="password"
+                required
+                minlength="8"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="showPassword.set(!showPassword())"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              >
+                <i class="fa" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+              </button>
+            </div>
+          </div>
+
+          @if (mode() === 'login') {
+            <p class="text-end mb-3">
+              <a routerLink="/forgot-password" class="small">Forgot password?</a>
+            </p>
+          }
+
+          @if (errorMessage()) {
+            <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+          }
+
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+            {{ loading() ? 'Please wait...' : mode() === 'login' ? 'Log in' : 'Create organization' }}
+          </button>
+
+          @if (googleClientId) {
+            <div class="login-divider"><span>or</span></div>
+            <div #googleButton class="login-google-button"></div>
+          }
+
+          <p class="login-footer">
+            @if (mode() === 'login') {
+              New here?
+              <a href="javascript:void(0)" (click)="toggleMode()">Create an organization</a>
+            } @else {
+              Already have an account?
+              <a href="javascript:void(0)" (click)="toggleMode()">Log in instead</a>
+            }
+          </p>
+        </form>
       </div>
-    }
 
-    <div class="field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" [(ngModel)]="email" required />
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" [(ngModel)]="password" required minlength="8" />
-    </div>
+      @if (pendingGoogleIdToken()) {
+        <h2 class="login-heading">One more step</h2>
+        <p class="text-muted">Enter an organization name to finish creating your account with Google.</p>
+        <form (ngSubmit)="continueGoogleSignUp()">
+          <div class="form-group mb-3">
+            <label class="form-label" for="googleOrgName">Organization name</label>
+            <input id="googleOrgName" name="googleOrgName" type="text" class="form-control" [(ngModel)]="organizationName" required />
+          </div>
 
-    @if (errorMessage()) {
-      <p class="error">{{ errorMessage() }}</p>
-    }
+          @if (errorMessage()) {
+            <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+          }
 
-    <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Please wait...' : mode() === 'login' ? 'Log in' : 'Create organization' }}
-    </button>
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+            {{ loading() ? 'Please wait...' : 'Continue' }}
+          </button>
 
-    <p class="hint" style="margin-top: 0.75rem;">
-      @if (mode() === 'login') {
-        New here?
-        <a href="javascript:void(0)" (click)="toggleMode()">Create an organization</a>
-      } @else {
-        Already have an account?
-        <a href="javascript:void(0)" (click)="toggleMode()">Log in instead</a>
+          <p class="login-footer">
+            <a href="javascript:void(0)" (click)="cancelGoogleSignUp()">Cancel</a>
+          </p>
+        </form>
       }
-    </p>
-  </form>
+    </div>
+  </div>
 </div>

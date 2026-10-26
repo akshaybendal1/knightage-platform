@@ -1,0 +1,117 @@
+<h1>Your services</h1>
+
+@if (errorMessage()) {
+  <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+}
+
+@if (loading()) {
+  <p class="text-muted">Loading...</p>
+} @else {
+  <div class="service-grid">
+    @for (service of services(); track service.key) {
+      <div class="service-tile-wrap">
+        <button
+          type="button"
+          class="service-tile"
+          [class.disabled]="!service.provisioned || !service.url"
+          [disabled]="!service.provisioned || !service.url"
+          (click)="open(service)"
+        >
+          <i class="fas" [class]="iconClass(service.key)"></i>
+          <span class="service-name">{{ service.displayName }}</span>
+          @if (service.provisioned && service.url) {
+            <span class="badge badge-success">Active</span>
+          } @else if (service.provisioned) {
+            <span class="service-status-note">Available soon</span>
+          } @else {
+            <span class="service-status-note">Not enabled for your organization yet</span>
+          }
+        </button>
+        @if (!service.provisioned) {
+          <button
+            type="button"
+            class="btn btn-label-secondary btn-sm request-btn"
+            [disabled]="isRequesting(service.key) || isRequestSent(service.key)"
+            (click)="requestService(service)"
+          >
+            {{ isRequestSent(service.key) ? 'Request sent' : isRequesting(service.key) ? 'Sending...' : 'Request access' }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="card card-round mt-4" style="max-width: 480px;">
+    <div class="card-header">
+      <div class="card-title">Your plan</div>
+    </div>
+    <div class="card-body">
+      @if (plan(); as current) {
+        <p class="mb-1"><strong>{{ current.name }}</strong></p>
+        <p class="text-muted small mb-3">
+          {{ current.maxUsers ?? 'Unlimited' }} users &middot; {{ current.maxRecords ?? 'Unlimited' }} records
+          @if (current.priceMonthly !== null) {
+            &middot; ₹{{ current.priceMonthly }}/mo
+          }
+        </p>
+      } @else {
+        <p class="text-muted small mb-3">No plan assigned yet -- unlimited users and records.</p>
+      }
+
+      @if (availablePlans().length > 0) {
+        <p class="fw-bold small text-uppercase text-muted mb-2">Other plans</p>
+        <div class="d-flex flex-column gap-2">
+          @for (option of availablePlans(); track option.id) {
+            @if (option.id !== plan()?.id) {
+              <div class="d-flex align-items-center justify-content-between gap-2 plan-option">
+                <div>
+                  <span class="fw-bold">{{ option.name }}</span>
+                  <span class="text-muted small d-block">
+                    {{ option.maxUsers ?? 'Unlimited' }} users &middot; {{ option.maxRecords ?? 'Unlimited' }} records
+                    @if (option.priceMonthly !== null) {
+                      &middot; ₹{{ option.priceMonthly }}/mo
+                    }
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-label-secondary btn-sm"
+                  [disabled]="isRequesting('plan:' + option.id) || isRequestSent('plan:' + option.id)"
+                  (click)="requestPlan(option.id)"
+                >
+                  {{ isRequestSent('plan:' + option.id) ? 'Request sent' : isRequesting('plan:' + option.id) ? 'Sending...' : 'Request this plan' }}
+                </button>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card card-round mt-4" style="max-width: 420px;">
+    <div class="card-header">
+      <div class="card-title">Field Force Tracking</div>
+    </div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">Lets your CRM's sales reps log entries from the field with automatic location capture.</p>
+      <p class="d-flex align-items-center gap-2 mb-3">
+        @if (fieldForceTrackingEnabled()) {
+          <span class="badge badge-success">Enabled</span>
+        } @else {
+          <span class="badge badge-secondary">Disabled</span>
+        }
+      </p>
+      @if (!fieldForceTrackingEnabled()) {
+        <button
+          type="button"
+          class="btn btn-label-secondary btn-sm"
+          [disabled]="isRequesting('fieldForceTracking') || isRequestSent('fieldForceTracking')"
+          (click)="requestFieldForceTracking()"
+        >
+          {{ isRequestSent('fieldForceTracking') ? 'Request sent' : isRequesting('fieldForceTracking') ? 'Sending...' : 'Request this feature' }}
+        </button>
+      }
+    </div>
+  </div>
+}

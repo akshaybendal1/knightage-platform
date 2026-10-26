@@ -1,0 +1,58 @@
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.service-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: var(--card-bg, #fff);
+  cursor: pointer;
+  text-align: center;
+}
+
+.service-tile i {
+  font-size: 1.75rem;
+}
+
+.service-name {
+  font-weight: 600;
+}
+
+.service-status-note {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #6b7280);
+  white-space: normal;
+  max-width: 100%;
+}
+
+.service-tile.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.service-tile-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.service-tile-wrap .service-tile {
+  flex: 1 1 auto;
+}
+
+.request-btn {
+  width: 100%;
+}
+
+.plan-option {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}

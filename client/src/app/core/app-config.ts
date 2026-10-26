@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 export interface ClientConfig {
   identityBaseUrl: string;
+  googleClientId: string | null;
 }
 
 /**
@@ -30,5 +31,9 @@ export class AppConfig {
       throw new Error('AppConfig was read before load() completed -- check the app initializer is registered.');
     }
     return config.identityBaseUrl;
+  }
+
+  get googleClientId(): string | null {
+    return this.configState()?.googleClientId ?? null;
   }
 }

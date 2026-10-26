@@ -1,53 +1,339 @@
-.topnav {
+/* ============================================================
+   Shell layout -- sidebar + topbar
+   Ported from knightage-crm's app.css. No bottom mobile nav bar --
+   with a single nav destination today it would just show one
+   redundant tab; the off-canvas sidebar below already covers mobile
+   nav. Add a .bottom-nav block (copy CRM's) once Platform grows more
+   sections.
+   ============================================================ */
+
+.shell {
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  z-index: 1040;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar-backdrop.visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1035;
+  }
+}
+
+.sidebar-brand {
+  min-height: 76px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.brand-link {
+  text-decoration: none;
+}
+
+.sidebar-org-name {
+  flex: 1 0 100%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand-text {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.nav-section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 24px;
+}
+
+.nav-link {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 0.75rem 1.5rem;
-  background: #1f2937;
-  color: #f9fafb;
-}
-
-.topnav a {
-  color: #d1d5db;
+  gap: 12px;
+  padding: 8px 10px;
+  margin: 2px 12px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
-.topnav a.active,
-.topnav a:hover {
-  color: #ffffff;
+.nav-link i {
+  width: 18px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.nav-link:hover {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.nav-link.active {
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
 }
 
-.topnav .brand {
-  font-weight: 700;
-  margin-right: 0.5rem;
+/* Main column */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.topnav .spacer {
-  flex: 1;
+@media (min-width: 992px) {
+  .main {
+    margin-left: 240px;
+  }
 }
 
-.topnav .user {
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-toggle {
+  display: inline-flex;
+}
+
+@media (min-width: 992px) {
+  .sidebar-toggle,
+  .topbar-brand {
+    display: none;
+  }
+}
+
+.topbar-brand {
+  text-decoration: none;
+}
+
+.topbar-org-name {
+  display: none;
   font-size: 0.85rem;
-  color: #9ca3af;
+  font-weight: 600;
+  color: var(--text-muted);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.topnav button {
-  background: transparent;
-  border: 1px solid #4b5563;
-  color: #f9fafb;
-  border-radius: 4px;
-  padding: 0.3rem 0.75rem;
+@media (min-width: 768px) {
+  .topbar-org-name {
+    display: inline-block;
+  }
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 35px;
+  height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-surface-2);
+  border: none;
+  color: var(--text-primary);
+  text-decoration: none;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.icon-btn:hover {
+  filter: brightness(0.96);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px 6px 4px 4px;
+  border-radius: 999px;
   cursor: pointer;
 }
 
-.topnav button:hover {
-  background: #374151;
+.user-menu-trigger:hover {
+  background: var(--bg-surface-2);
 }
 
-.page {
-  padding: 1.5rem;
-  max-width: 1100px;
-  margin: 0 auto;
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  flex-shrink: 0;
+  width: 35px;
+  height: 35px;
+  font-size: 0.85rem;
+}
+
+.user-avatar-lg {
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+}
+
+.user-name {
+  display: none;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .user-name {
+    display: flex;
+  }
+}
+
+.user-greeting {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.user-display-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  display: none;
+}
+
+.user-dropdown.show {
+  display: block;
+}
+
+.user-dropdown-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px;
+}
+
+.user-dropdown-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.user-dropdown-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Page content */
+
+.page-content {
+  flex: 1 1 auto;
+  padding: 24px;
+}
+
+@media (max-width: 767.98px) {
+  .page-content {
+    padding: 16px;
+  }
+}
+
+.footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 991.98px) {
+  .footer {
+    display: none;
+  }
 }

@@ -16,3 +16,9 @@ src/Knightage.Platform.Api/wwwroot/
 ## OS
 .DS_Store
 Thumbs.db
+
+*.bak
+# deploy tool scratch (holds copies of production config) and local publish output
+.deploy-work/
+src/Knightage.Platform.Api/publish/
+**/PublishProfiles/*.pubxml.user

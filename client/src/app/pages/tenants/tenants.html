@@ -1,136 +1,391 @@
 <h1>Tenants</h1>
 
 @if (errorMessage()) {
-  <p class="error">{{ errorMessage() }}</p>
+  <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
 }
 
-<form class="card wide" (ngSubmit)="provision()">
-  <h2>Provision a tenant</h2>
-  <p class="hint" style="margin-top: -0.25rem; margin-bottom: 0.75rem;">
-    New organizations are provisioned automatically on registration in knightage-identity. Use
-    this to retry a provisioning failure or backfill an existing organization.
-  </p>
-  <div class="field">
-    <label for="organizationId">Organization ID</label>
-    <input id="organizationId" name="organizationId" type="text" [(ngModel)]="organizationId" required placeholder="GUID from knightage-identity" />
+<div class="card mb-4">
+  <div class="card-header">
+    <h2 class="card-title">Provision a tenant</h2>
   </div>
-  <div class="field">
-    <label for="organizationName">Organization name</label>
-    <input id="organizationName" name="organizationName" type="text" [(ngModel)]="organizationName" required />
+  <div class="card-body">
+    <p class="text-muted" style="margin-top: -0.25rem;">
+      New organizations are provisioned automatically on registration in knightage-identity. Use
+      this to retry a provisioning failure or backfill an existing organization.
+    </p>
+    <form (ngSubmit)="provision()">
+      <div class="form-group mb-3">
+        <label class="form-label" for="organizationId">Organization ID</label>
+        <input id="organizationId" name="organizationId" type="text" class="form-control" [(ngModel)]="organizationId" required placeholder="GUID from knightage-identity" />
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="organizationName">Organization name</label>
+        <input id="organizationName" name="organizationName" type="text" class="form-control" [(ngModel)]="organizationName" required />
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="provisioning()">
+        {{ provisioning() ? 'Provisioning...' : 'Provision' }}
+      </button>
+    </form>
   </div>
-  <button type="submit" [disabled]="provisioning()">
-    {{ provisioning() ? 'Provisioning...' : 'Provision' }}
-  </button>
-</form>
+</div>
 
-@if (loading()) {
-  <p class="hint">Loading...</p>
-} @else {
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Slug</th>
-        <th>Status</th>
-        <th>Subscription</th>
-        <th>Ends</th>
-        <th>Created</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (row of tenants(); track row.tenant.id) {
-        <tr>
-          <td>{{ row.tenant.name }}</td>
-          <td>{{ row.tenant.slug }}</td>
-          <td><span class="badge">{{ row.tenant.status }}</span></td>
-          <td><span class="badge" [class]="'sub-' + row.subscription.status">{{ row.subscription.status }}</span></td>
-          <td>{{ row.subscription.endDate ? (row.subscription.endDate | slice: 0 : 10) : '—' }}</td>
-          <td>{{ row.tenant.createdAtUtc | slice: 0 : 10 }}</td>
-          <td><button type="button" class="secondary" (click)="viewTenant(row.tenant)">View</button></td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="7" class="hint">No tenants provisioned yet.</td>
-        </tr>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row g-2 mb-3 align-items-center tenant-filters">
+      <div class="col-12 col-md-5">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span>
+          <input
+            type="search"
+            class="form-control"
+            placeholder="Search name, slug or org ID"
+            aria-label="Search tenants by name, slug or organization ID"
+            maxlength="100"
+            [(ngModel)]="search"
+            (ngModelChange)="onSearchInput()"
+            (keyup.enter)="applyFilters()"
+          />
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" aria-label="Filter by plan" [ngModel]="planFilter" (ngModelChange)="planFilter = $event; applyFilters()">
+          <option value="">All plans</option>
+          <option value="none">No plan</option>
+          @for (plan of plans(); track plan.id) {
+            <option [value]="plan.id">{{ plan.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" aria-label="Filter by subscription" [ngModel]="subscriptionFilter" (ngModelChange)="subscriptionFilter = $event; applyFilters()">
+          <option value="">All subscriptions</option>
+          @for (option of subscriptionOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-12 col-md-1 d-flex justify-content-md-end">
+        @if (hasActiveFilters()) {
+          <button type="button" class="btn btn-label-secondary btn-sm" (click)="clearFilters()">Clear</button>
+        }
+      </div>
+      <!-- The column headers are hidden in the stacked phone layout, so sorting needs its own control there. -->
+      <div class="col-12 d-md-none">
+        <div class="input-group">
+          <span class="input-group-text">Sort by</span>
+          <select class="form-select" aria-label="Sort tenants by" [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
+            @for (option of sortOptions; track option.key) {
+              <option [value]="option.key">{{ option.label }}</option>
+            }
+          </select>
+          <button type="button" class="btn btn-label-secondary" (click)="toggleSortDir()" [attr.aria-label]="sortDir() === 'asc' ? 'Ascending, switch to descending' : 'Descending, switch to ascending'">
+            <i class="fas" [class]="sortDir() === 'asc' ? 'fa-sort-up' : 'fa-sort-down'" aria-hidden="true"></i>
+            {{ sortDir() === 'asc' ? 'Asc' : 'Desc' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading() && !loadedOnce()) {
+      <p class="text-muted mb-0">Loading...</p>
+    } @else {
+      <table class="table table-hover table-card-mobile" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
+        <thead>
+          <tr>
+            <th [attr.aria-sort]="ariaSort('name')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'name'" (click)="setSort('name')">Name <i class="fas" [class]="sortIconClass('name')" aria-hidden="true"></i></button></th>
+            <th [attr.aria-sort]="ariaSort('slug')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'slug'" (click)="setSort('slug')">Slug <i class="fas" [class]="sortIconClass('slug')" aria-hidden="true"></i></button></th>
+            <th>Status</th>
+            <th [attr.aria-sort]="ariaSort('plan')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'plan'" (click)="setSort('plan')">Plan <i class="fas" [class]="sortIconClass('plan')" aria-hidden="true"></i></button></th>
+            <th [attr.aria-sort]="ariaSort('subscription')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'subscription'" (click)="setSort('subscription')">Subscription <i class="fas" [class]="sortIconClass('subscription')" aria-hidden="true"></i></button></th>
+            <th [attr.aria-sort]="ariaSort('ends')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'ends'" (click)="setSort('ends')">Ends <i class="fas" [class]="sortIconClass('ends')" aria-hidden="true"></i></button></th>
+            <th [attr.aria-sort]="ariaSort('created')"><button type="button" class="sort-btn" [class.active]="sortBy() === 'created'" (click)="setSort('created')">Created <i class="fas" [class]="sortIconClass('created')" aria-hidden="true"></i></button></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of tenants(); track row.tenant.id) {
+            <tr>
+              <td data-label="Name">{{ row.tenant.name }}</td>
+              <td data-label="Slug">{{ row.tenant.slug }}</td>
+              <td data-label="Status"><span class="badge badge-secondary">{{ row.tenant.status }}</span></td>
+              <td data-label="Plan">{{ row.plan?.name ?? 'None' }}</td>
+              <td data-label="Subscription"><span class="badge" [class]="subscriptionBadgeClass(row.subscription.status)">{{ row.subscription.status }}</span></td>
+              <td data-label="Ends">{{ row.subscription.endDate ? (row.subscription.endDate | slice: 0 : 10) : '—' }}</td>
+              <td data-label="Created">{{ row.tenant.createdAtUtc | slice: 0 : 10 }}</td>
+              <td><button type="button" class="btn btn-sm btn-label-secondary" (click)="viewTenant(row.tenant)">View</button></td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-muted">{{ hasActiveFilters() ? 'No tenants match your search or filters.' : 'No tenants provisioned yet.' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (totalCount() > 0) {
+        <div class="d-flex align-items-center justify-content-between mt-3 flex-wrap gap-2">
+          <span class="text-muted small">Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalCount() }}{{ hasActiveFilters() ? ' matching' : '' }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="page() === 1" (click)="goToPage(page() - 1)">Previous</button>
+            <span class="text-muted small">Page {{ page() }} of {{ totalPages() }}</span>
+            <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="page() === totalPages()" (click)="goToPage(page() + 1)">Next</button>
+          </div>
+        </div>
       }
-    </tbody>
-  </table>
-}
+    }
+  </div>
+</div>
 
 @if (selectedDetail(); as detail) {
-  <div class="card wide">
-    <h2>{{ detail.tenant.name }}</h2>
-    <p class="hint">Organization ID: {{ detail.tenant.organizationId }}</p>
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2 class="card-title">{{ detail.tenant.name }}</h2>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">Organization ID: {{ detail.tenant.organizationId }}</p>
 
-    <h3>Subscription</h3>
-    @if (editingSubscription()) {
-      <div class="field">
-        <label for="subStartDate">Start date</label>
-        <input id="subStartDate" name="subStartDate" type="date" [(ngModel)]="subStartDate" />
-      </div>
-      <div class="field">
-        <label for="subEndDate">End date</label>
-        <input id="subEndDate" name="subEndDate" type="date" [(ngModel)]="subEndDate" />
-      </div>
-      <div class="field">
-        <label for="subGracePeriodDays">Grace period (days)</label>
-        <input id="subGracePeriodDays" name="subGracePeriodDays" type="number" min="0" [(ngModel)]="subGracePeriodDays" />
-        <span class="hint">The vendor's apps go read-only the day after End date, for this many days, then fully disabled.</span>
-      </div>
-      <div class="field">
-        <label for="subNotes">Notes</label>
-        <input id="subNotes" name="subNotes" type="text" [(ngModel)]="subNotes" />
-      </div>
-      <button type="button" [disabled]="savingSubscription()" (click)="saveSubscription()">
-        {{ savingSubscription() ? 'Saving...' : 'Save subscription' }}
-      </button>
-      <button type="button" class="secondary" (click)="cancelEditSubscription()">Cancel</button>
-    } @else {
-      <p>
-        Status: <span class="badge" [class]="'sub-' + detail.subscription.status">{{ detail.subscription.status }}</span>
-      </p>
-      @if (detail.subscription.endDate) {
-        <p class="hint">
-          {{ detail.subscription.startDate | slice: 0 : 10 }} &rarr; {{ detail.subscription.endDate | slice: 0 : 10 }}
-          ({{ detail.subscription.gracePeriodDays }} day grace period)
-        </p>
-        @if (detail.subscription.notes) {
-          <p class="hint">{{ detail.subscription.notes }}</p>
-        }
+      <h3 class="h6 mt-4">Subscription</h3>
+      @if (editingSubscription()) {
+        <div class="form-group mb-3">
+          <label class="form-label" for="subStartDate">Start date</label>
+          <input id="subStartDate" name="subStartDate" type="date" class="form-control" [(ngModel)]="subStartDate" />
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label" for="subEndDate">End date</label>
+          <input id="subEndDate" name="subEndDate" type="date" class="form-control" [(ngModel)]="subEndDate" />
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label" for="subGracePeriodDays">Grace period (days)</label>
+          <input id="subGracePeriodDays" name="subGracePeriodDays" type="number" min="0" class="form-control" [(ngModel)]="subGracePeriodDays" />
+          <span class="text-muted" style="font-size: 0.8125rem;">The vendor's apps go read-only the day after End date, for this many days, then fully disabled.</span>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label" for="subNotes">Notes</label>
+          <input id="subNotes" name="subNotes" type="text" class="form-control" [(ngModel)]="subNotes" />
+        </div>
+        <button type="button" class="btn btn-primary" [disabled]="savingSubscription()" (click)="saveSubscription()">
+          {{ savingSubscription() ? 'Saving...' : 'Save subscription' }}
+        </button>
+        <button type="button" class="btn btn-label-secondary" (click)="cancelEditSubscription()">Cancel</button>
       } @else {
-        <p class="hint">No subscription set yet -- treated as Active/unrestricted.</p>
-      }
-      <button type="button" class="secondary" (click)="startEditSubscription()">
-        {{ detail.subscription.endDate ? 'Edit subscription' : 'Set subscription' }}
-      </button>
-    }
-
-    <h3>Service databases</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Service</th>
-          <th>Database</th>
-          <th>Status</th>
-          <th>Provisioned</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (db of detail.databases; track db.id) {
-          <tr>
-            <td>{{ db.serviceName }}</td>
-            <td>{{ db.databaseName }}</td>
-            <td><span class="badge">{{ db.status }}</span></td>
-            <td>{{ db.createdAtUtc | slice: 0 : 10 }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4" class="hint">No service databases provisioned yet.</td>
-          </tr>
+        <p>
+          Status: <span class="badge" [class]="subscriptionBadgeClass(detail.subscription.status)">{{ detail.subscription.status }}</span>
+        </p>
+        @if (detail.subscription.endDate) {
+          <p class="text-muted">
+            {{ detail.subscription.startDate | slice: 0 : 10 }} &rarr; {{ detail.subscription.endDate | slice: 0 : 10 }}
+            ({{ detail.subscription.gracePeriodDays }} day grace period)
+          </p>
+          @if (detail.subscription.notes) {
+            <p class="text-muted">{{ detail.subscription.notes }}</p>
+          }
+        } @else {
+          <p class="text-muted">No subscription set yet -- treated as Active/unrestricted.</p>
         }
-      </tbody>
-    </table>
-    <button type="button" class="secondary" (click)="closeDetail()">Close</button>
+        <button type="button" class="btn btn-label-secondary" (click)="startEditSubscription()">
+          {{ detail.subscription.endDate ? 'Edit subscription' : 'Set subscription' }}
+        </button>
+      }
+
+      <p class="text-muted mt-2" style="font-size: 0.8125rem;">
+        CRM caches subscription/plan info for up to 15 minutes -- saving above already syncs
+        it automatically, but you can force it sooner (e.g. after a change made elsewhere).
+      </p>
+      <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="syncingCrmCache()" (click)="invalidateCrmCache(detail.tenant.organizationId)">
+        {{ syncingCrmCache() ? 'Syncing...' : 'Sync CRM cache now' }}
+      </button>
+      @if (crmCacheSynced()) {
+        <span class="text-muted ms-2" style="font-size: 0.8125rem;">Synced.</span>
+      }
+
+      <h3 class="h6 mt-4">Branding</h3>
+      @if (editingAccentColor()) {
+        <div class="form-group mb-3">
+          <label class="form-label" for="accentColorInput">Accent color</label>
+          <div class="d-flex align-items-center gap-2">
+            <input id="accentColorInput" name="accentColorInput" type="color" class="form-control form-control-color" [(ngModel)]="accentColorInput" />
+            <span class="text-muted">{{ accentColorInput }}</span>
+          </div>
+          <span class="text-muted" style="font-size: 0.8125rem;">Applied to this tenant's CRM only -- buttons, active nav, badges.</span>
+        </div>
+        <button type="button" class="btn btn-primary" [disabled]="savingAccentColor()" (click)="saveAccentColor()">
+          {{ savingAccentColor() ? 'Saving...' : 'Save accent color' }}
+        </button>
+        <button type="button" class="btn btn-label-secondary" [disabled]="savingAccentColor()" (click)="cancelEditAccentColor()">Cancel</button>
+      } @else {
+        <p class="d-flex align-items-center gap-2">
+          @if (detail.tenant.accentColor) {
+            <span class="color-swatch" [style.background]="detail.tenant.accentColor"></span>
+            <span>{{ detail.tenant.accentColor }}</span>
+          } @else {
+            <span class="text-muted">Using the default color.</span>
+          }
+        </p>
+        <button type="button" class="btn btn-label-secondary" (click)="startEditAccentColor()">
+          {{ detail.tenant.accentColor ? 'Edit accent color' : 'Set accent color' }}
+        </button>
+        @if (detail.tenant.accentColor) {
+          <button type="button" class="btn btn-label-secondary" [disabled]="savingAccentColor()" (click)="resetAccentColor()">Reset to default</button>
+        }
+      }
+
+      <h3 class="h6 mt-4">Plan</h3>
+      <p class="text-muted" style="margin-top: -0.25rem;">
+        Controls this tenant's user seat cap and per-app record limits. No plan means
+        unlimited/unrestricted, same as today.
+      </p>
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <select class="form-select" style="max-width: 260px;" [(ngModel)]="selectedPlanId" name="selectedPlanId">
+          <option value="">No plan (unlimited)</option>
+          @for (plan of plans(); track plan.id) {
+            <option [value]="plan.id">{{ plan.name }} ({{ plan.maxUsers ?? '∞' }} users / {{ plan.maxRecords ?? '∞' }} records)</option>
+          }
+        </select>
+        <button type="button" class="btn btn-label-secondary" [disabled]="savingPlan()" (click)="saveTenantPlan()">
+          {{ savingPlan() ? 'Saving...' : 'Save plan' }}
+        </button>
+      </div>
+
+      <h3 class="h6 mt-4">Field Force Tracking</h3>
+      <p class="text-muted" style="margin-top: -0.25rem;">
+        Lets this tenant's knightage-crm assign the "Sales" role and use the Add Sales
+        Entry / Sales Dashboard pages. Off by default for every tenant.
+      </p>
+      <p class="d-flex align-items-center gap-2">
+        @if (detail.tenant.fieldForceTrackingEnabled) {
+          <span class="badge badge-success">Enabled</span>
+        } @else {
+          <span class="badge badge-secondary">Disabled</span>
+        }
+      </p>
+      <button type="button" class="btn btn-label-secondary" [disabled]="savingFieldForceTracking()" (click)="toggleFieldForceTracking()">
+        {{ savingFieldForceTracking() ? 'Saving...' : detail.tenant.fieldForceTrackingEnabled ? 'Disable' : 'Enable' }}
+      </button>
+
+      <h3 class="h6 mt-4">Accounting: multiple companies</h3>
+      <p class="text-muted" style="margin-top: -0.25rem;">
+        Off: this tenant's Accounting keeps the books of its own organization only (one company).
+        On: it can add more companies -- for an accounting firm keeping its clients' books.
+        Accounting picks up a change within 15 minutes.
+      </p>
+      <p class="d-flex align-items-center gap-2">
+        @if (detail.tenant.accountingMultiCompanyEnabled) {
+          <span class="badge badge-success">Multiple companies</span>
+        } @else {
+          <span class="badge badge-secondary">Own organization only</span>
+        }
+      </p>
+      <button type="button" class="btn btn-label-secondary" [disabled]="savingAccountingMultiCompany()" (click)="toggleAccountingMultiCompany()">
+        {{ savingAccountingMultiCompany() ? 'Saving...' : detail.tenant.accountingMultiCompanyEnabled ? 'Limit to own organization' : 'Allow multiple companies' }}
+      </button>
+
+      <h3 class="h6 mt-4">Scaling</h3>
+      <p class="text-muted" style="margin-top: -0.25rem;">
+        Move this tenant's CRM data to another database (its own, or a shard shared with
+        other tenants), or export its data for standing up an independent copy elsewhere.
+        The target database must already exist and be reachable -- this doesn't create one.
+      </p>
+
+      <p class="mb-2">Current CRM location: <strong>{{ crmCurrentLocation(detail) }}</strong></p>
+
+      @if (detail.tenant.isMigrating) {
+        <div class="alert alert-warning py-2">
+          A migration is in progress -- this tenant is in maintenance mode.
+        </div>
+      }
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="exportingCrm()" (click)="exportCrmData()">
+          {{ exportingCrm() ? 'Exporting...' : 'Export CRM data' }}
+        </button>
+        <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="exportingBundle()" (click)="exportFullBundle()">
+          {{ exportingBundle() ? 'Exporting...' : 'Export full bundle' }}
+        </button>
+      </div>
+
+      @if (!detail.crmMigrationAwaitingPurge) {
+        <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+          <div>
+            <label class="form-label small mb-0" for="moveTargetServer">Target server (blank = default)</label>
+            <input id="moveTargetServer" type="text" class="form-control form-control-sm" placeholder="e.g. 10.0.0.5 (blank for the default server)" [(ngModel)]="moveTargetServer" name="moveTargetServer" />
+          </div>
+          <div>
+            <label class="form-label small mb-0" for="moveTargetDatabaseName">Target database name</label>
+            <input id="moveTargetDatabaseName" type="text" class="form-control form-control-sm" placeholder="e.g. Knightage_Crm_Shard2" [(ngModel)]="moveTargetDatabaseName" name="moveTargetDatabaseName" />
+          </div>
+          <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="migratingCrm() || detail.tenant.isMigrating || !moveTargetDatabaseName.trim()" (click)="moveCrmData()">
+            {{ migratingCrm() ? 'Moving...' : 'Move CRM data' }}
+          </button>
+        </div>
+      }
+
+      @if (migrationResult(); as result) {
+        <div class="alert alert-success py-2">
+          Now on <strong>{{ result.targetServer ? (result.targetServer + ' / ' + result.targetDatabaseName) : result.targetDatabaseName }}</strong>.
+        </div>
+      }
+
+      @if (detail.crmMigrationAwaitingPurge) {
+        <div class="alert alert-warning py-2">
+          <p class="mb-2">
+            This tenant has migrated to its own database. Its old data is still sitting in
+            the shared database -- download the backup before cleaning it up.
+          </p>
+          <button type="button" class="btn btn-label-secondary btn-sm me-2" (click)="downloadCrmMigrationBackup()">Download backup</button>
+          <button type="button" class="btn btn-label-danger btn-sm" [disabled]="purgingCrm()" (click)="purgeCrmSharedData()">
+            {{ purgingCrm() ? 'Cleaning up...' : 'Confirm & clean up old data' }}
+          </button>
+        </div>
+      }
+
+      <h3 class="h6 mt-4">Service databases</h3>
+      <p class="text-muted" style="margin-top: -0.25rem;">
+        Disabling a service blocks this tenant's access to it (CRM, Accounting and Inventory
+        enforce this on every request) -- it doesn't just hide the tile on their launcher.
+        Enabling a service this tenant was never set up for adds it.
+      </p>
+      <table class="table table-hover table-card-mobile">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Server</th>
+            <th>Database</th>
+            <th>Status</th>
+            <th>Provisioned</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of serviceRows(); track row.key) {
+            <tr>
+              <td data-label="Service">{{ row.displayName }}</td>
+              <td data-label="Server">{{ row.db ? (row.db.serverAddress || 'default') : '-' }}</td>
+              <td data-label="Database">{{ row.db?.databaseName ?? '-' }}</td>
+              <td data-label="Status">
+                @if (row.db) {
+                  <span class="badge" [class]="row.db.status === 'Provisioned' ? 'badge-success' : 'badge-secondary'">{{ row.db.status }}</span>
+                } @else {
+                  <span class="badge badge-secondary">Not set up</span>
+                }
+              </td>
+              <td data-label="Provisioned">{{ row.db ? (row.db.createdAtUtc | slice: 0 : 10) : '-' }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-label-secondary]="row.db?.status === 'Provisioned'"
+                  [class.btn-primary]="row.db?.status !== 'Provisioned'"
+                  [disabled]="savingServiceStatus() === row.key"
+                  (click)="toggleServiceStatus(row.key, row.db)"
+                >
+                  {{ savingServiceStatus() === row.key ? 'Saving...' : row.db?.status === 'Provisioned' ? 'Disable' : 'Enable' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-label-secondary mt-2" (click)="closeDetail()">Close</button>
+    </div>
   </div>
 }

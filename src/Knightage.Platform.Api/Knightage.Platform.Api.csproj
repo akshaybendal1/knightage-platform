@@ -18,9 +18,12 @@
     <ProjectReference Include="..\Knightage.Platform.Service\Knightage.Platform.Service.csproj" />
   </ItemGroup>
 
+  <!-- Bundled CRM schema snapshot, replayed against a fresh database when a tenant
+       is moved to a dedicated CRM database; see crm-schema/README.md. -->
   <ItemGroup>
-    <Content Include="schemas\**\*.sql">
+    <Content Include="crm-schema\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 

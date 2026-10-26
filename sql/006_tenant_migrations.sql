@@ -1,0 +1,13 @@
+ALTER TABLE dbo.Tenants ADD IsMigrating BIT NOT NULL DEFAULT 0;
+
+CREATE TABLE dbo.TenantMigrations (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    TenantId UNIQUEIDENTIFIER NOT NULL REFERENCES dbo.Tenants(Id),
+    ServiceName NVARCHAR(50) NOT NULL,
+    OldDatabaseName NVARCHAR(128) NOT NULL,
+    NewDatabaseName NVARCHAR(128) NOT NULL,
+    Status NVARCHAR(20) NOT NULL DEFAULT 'AwaitingPurge',
+    BackupFilePath NVARCHAR(400) NULL,
+    MigratedAtUtc DATETIME2 NOT NULL,
+    PurgedAtUtc DATETIME2 NULL
+);

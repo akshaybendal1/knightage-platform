@@ -1,7 +1,7 @@
 using System.Text;
 using Knightage.Platform.Core.Interfaces;
 using Knightage.Platform.Infrastructure.Data;
-using Knightage.Platform.Infrastructure.Provisioning;
+using Knightage.Platform.Infrastructure.ExternalServices;
 using Knightage.Platform.Infrastructure.Repositories;
 using Knightage.Platform.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -43,8 +43,22 @@ builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<ITenantServiceDatabaseRepository, TenantServiceDatabaseRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
-builder.Services.AddScoped<IServiceDatabaseProvisioner, SqlServiceDatabaseProvisioner>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<ITenantMigrationRepository, TenantMigrationRepository>();
+builder.Services.AddScoped<ITenantDataService, TenantDataService>();
 builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+var crmBaseUrl = builder.Configuration["Services:CrmBaseUrl"]
+    ?? throw new InvalidOperationException("Services:CrmBaseUrl is not configured.");
+builder.Services.AddHttpClient("Crm", client =>
+{
+    client.BaseAddress = new Uri(crmBaseUrl);
+    // Best-effort call during a migration, not something every request waits on -- fail
+    // fast rather than let a slow/unreachable CRM stall the migration itself.
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.Services.AddScoped<ICrmCacheInvalidator, CrmCacheInvalidator>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
