@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inflated at runtime in MainActivity, on top of the real Capacitor WebView.
+     Capacitor 8's BridgeActivity builds its own content view from a layout
+     bundled in the @capacitor/android library (capacitor_bridge_layout_main.xml),
+     not from this app's activity_main.xml, so there is no static layout file to
+     add this to; it has to be inserted into the view tree in code instead. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:visibility="gone">
+
+    <ImageView
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_launcher_foreground" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="No internet connection"
+        android:textColor="#1A1A1A"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:text="Check your connection and try again."
+        android:textColor="#666666"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#1572E8"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:text="Retry"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>

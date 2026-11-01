@@ -6,7 +6,7 @@ import { PlanSummary, ServiceCatalogEntry } from '../../core/models';
 const SERVICE_ICONS: Record<string, string> = {
   Crm: 'fa-users',
   Accounting: 'fa-calculator',
-  InventorySales: 'fa-boxes-stacked',
+  InventorySales: 'fa-boxes', // Font Awesome 5 (KaiAdmin); fa-boxes-stacked is FA6-only and rendered nothing
 };
 
 @Component({

@@ -2,11 +2,13 @@
   <div class="login-card card">
     <div class="card-body">
       <div class="login-wordmark">
-        <span class="login-wordmark-primary">Knightage</span><span class="login-wordmark-accent">Platform</span>
+        <span class="login-wordmark-primary">Knightage</span>@if (!isNative) {<span class="login-wordmark-accent">Platform</span>}
       </div>
 
       <div [style.display]="pendingGoogleIdToken() ? 'none' : 'block'">
-        <h2 class="login-heading">{{ mode() === 'login' ? 'Log in to Knightage Platform' : 'Create your organization' }}</h2>
+        <h2 class="login-heading">
+          {{ mode() === 'register' ? 'Create your organization' : isNative ? 'Sign in to CRM, Inventory and Accounting' : 'Log in to Knightage Platform' }}
+        </h2>
         <form (ngSubmit)="submit()">
           @if (mode() === 'register') {
             <div class="form-group mb-3">
@@ -61,7 +63,13 @@
 
           @if (googleClientId) {
             <div class="login-divider"><span>or</span></div>
-            <div #googleButton class="login-google-button"></div>
+            @if (isNative) {
+              <button type="button" class="btn btn-outline-secondary w-100" (click)="signInWithGoogleNative()" [disabled]="loading()">
+                Continue with Google
+              </button>
+            } @else {
+              <div #googleButton class="login-google-button"></div>
+            }
           }
 
           <p class="login-footer">

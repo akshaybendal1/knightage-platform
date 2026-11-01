@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only (merged over src/main): lets the local-test build (KNIGHTAGE_APP_TARGET=local in
+     capacitor.config.ts) load the dev APIs on http://localhost through `adb reverse`. Release builds never
+     get this and stay https-only. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>
