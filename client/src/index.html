@@ -10,8 +10,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Loading screen: shown from the first paint until Angular renders (it replaces <app-root>'s content), and reused
+       by /auth-callback and by the "Opening ..." screen shown when switching apps (knightage-apps.ts), so moving between
+       Knightage apps reads as one step. The script applies the saved light/dark theme before anything paints -- the
+       same rule as core/theme.ts, which takes over once the app runs -- so there's no theme flash either. -->
+  <script>
+    try { document.documentElement.setAttribute('data-theme', localStorage.getItem('knightage_theme') === 'light' ? 'light' : 'dark'); } catch (e) {}
+  </script>
+  <style>
+    .boot-splash { --boot-accent: #4f6df5; position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px; text-align: center; background: #0b1220; color: #e5e9f0; font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    html[data-theme='light'] .boot-splash { background: #f3f4f8; color: #171717; }
+    .boot-splash-mark { font-size: 1.6rem; font-weight: 700; }
+    .boot-splash-mark span { color: var(--boot-accent); }
+    .boot-splash-spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid rgba(139, 147, 167, 0.25); border-top-color: var(--boot-accent); animation: boot-splash-spin 0.8s linear infinite; }
+    .boot-splash-text { font-size: 0.9rem; color: #8b93a7; }
+    html[data-theme='light'] .boot-splash-text { color: #737373; }
+    @keyframes boot-splash-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .boot-splash-spinner { animation-duration: 2.4s; } }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="boot-splash" role="status" aria-live="polite">
+      <div class="boot-splash-mark">Knightage<span></span></div>
+      <div class="boot-splash-spinner" aria-hidden="true"></div>
+      <div class="boot-splash-text">Loading…</div>
+    </div>
+  </app-root>
+  <script>
+    // Arriving from another Knightage app (the hand-off lands on /auth-callback): keep the "Opening ..." wording.
+    if (location.pathname === '/auth-callback') { document.querySelector('.boot-splash-text').textContent = 'Opening your services…'; }
+  </script>
 </body>
 </html>

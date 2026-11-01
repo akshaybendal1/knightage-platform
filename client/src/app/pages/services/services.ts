@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { Auth } from '../../core/auth';
+import { showAppSwitchScreen } from '../../core/app-switch-screen';
 import { PlatformApi } from '../../core/platform-api';
 import { PlanSummary, ServiceCatalogEntry } from '../../core/models';
 
@@ -59,6 +60,7 @@ export class Services implements OnInit {
     if (!service.provisioned || !service.url || !this.auth.token) {
       return;
     }
+    showAppSwitchScreen(service.displayName);
     window.location.href = `${service.url}/auth-callback?token=${encodeURIComponent(this.auth.token)}`;
   }
 

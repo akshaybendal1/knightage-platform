@@ -1,5 +1,10 @@
 @if (errorMessage) {
   <div class="alert alert-danger py-2">{{ errorMessage }}</div>
 } @else {
-  <p class="text-muted">Signing you in...</p>
+  <!-- index.html's loading screen, so arriving from another Knightage app reads as one "Opening ..." step. -->
+  <div class="boot-splash" role="status" aria-live="polite">
+    <div class="boot-splash-mark">Knightage<span></span></div>
+    <div class="boot-splash-spinner" aria-hidden="true"></div>
+    <div class="boot-splash-text">Opening your services…</div>
+  </div>
 }
