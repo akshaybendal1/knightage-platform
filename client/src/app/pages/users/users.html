@@ -1,0 +1,136 @@
+<div class="page-head">
+  <div>
+    <h1 class="mb-1">Users</h1>
+    <p class="text-muted small mb-0">Who is in your organization, which apps they can open, and what they can do in each.</p>
+  </div>
+  <button type="button" class="btn btn-primary btn-sm" (click)="showForm.set(!showForm()); addError.set(null)">
+    <i class="fas" [class.fa-plus]="!showForm()" [class.fa-times]="showForm()"></i>
+    {{ showForm() ? 'Close' : 'Add user' }}
+  </button>
+</div>
+
+@if (added()) {
+  <div class="alert alert-success py-2">{{ added() }}</div>
+}
+
+@if (showForm()) {
+  <div class="card card-round add-card">
+    <div class="card-header">
+      <div class="card-title">Add a user</div>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="addMember()" class="add-grid">
+        <div>
+          <label class="form-label" for="displayName">Name</label>
+          <input id="displayName" name="displayName" type="text" class="form-control" [(ngModel)]="displayName" required autocomplete="off" />
+        </div>
+        <div>
+          <label class="form-label" for="email">Email</label>
+          <input id="email" name="email" type="email" class="form-control" [(ngModel)]="email" required autocomplete="off" />
+        </div>
+        <div>
+          <label class="form-label" for="phone">Phone <span class="text-muted">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" class="form-control" [(ngModel)]="phone" pattern="[0-9+\-\s()]*" />
+        </div>
+        <div>
+          <label class="form-label" for="role">Role</label>
+          <select id="role" name="role" class="form-select" [(ngModel)]="role">
+            <option value="Member">Member</option>
+            <option value="Sales">Sales</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <div class="span-2">
+          <label class="form-label" for="password">First password</label>
+          <div class="input-group">
+            <input id="password" name="password" type="text" class="form-control" [(ngModel)]="password" required minlength="8" autocomplete="new-password" />
+            <button type="button" class="btn btn-label-secondary" (click)="generatePassword()">Suggest one</button>
+          </div>
+          <span class="text-muted small">At least 8 characters. Give it to them yourself; they can change it after signing in.</span>
+        </div>
+        <p class="span-2 text-muted small mb-0">
+          New users can open every app with what their role allows. Open them afterwards to change that.
+        </p>
+        @if (addError()) {
+          <div class="span-2 alert alert-danger py-2 mb-0">{{ addError() }}</div>
+        }
+        <div class="span-2">
+          <button type="submit" class="btn btn-primary" [disabled]="adding()">{{ adding() ? 'Adding…' : 'Add user' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (errorMessage()) {
+  <div class="alert alert-danger py-2">
+    {{ errorMessage() }}
+    <button type="button" class="btn btn-link btn-sm p-0 ms-2" (click)="load()">Try again</button>
+  </div>
+}
+
+@if (loading()) {
+  <p class="text-muted">Loading…</p>
+} @else if (!errorMessage()) {
+  <div class="card card-round">
+    <div class="card-body">
+      <div class="list-tools">
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Search by name, email or role"
+          aria-label="Search users"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+        <span class="text-muted small">{{ filtered().length }} of {{ members().length }}</span>
+      </div>
+
+      <ul class="user-list">
+        @for (member of filtered(); track member.id) {
+          <li class="user-row" [class.inactive]="!member.isActive">
+            <span class="avatar" aria-hidden="true">{{ initials(member.displayName) }}</span>
+            <div class="who">
+              <div class="name">
+                {{ member.displayName }}
+                @if (isSelf(member)) {
+                  <span class="text-muted small">(you)</span>
+                }
+              </div>
+              <div class="email">{{ member.email }}</div>
+            </div>
+            <div class="badges">
+              <span class="badge" [class.badge-primary]="member.role !== 'Owner'" [class.badge-purple]="member.role === 'Owner'">{{ member.role }}</span>
+              @if (!member.isActive) {
+                <span class="badge badge-secondary">Switched off</span>
+              }
+            </div>
+            <div class="apps" aria-label="Apps this user can open">
+              @for (app of enabledApps(); track app.service) {
+                @if (canOpen(member, app.service)) {
+                  <span class="app-chip"><i class="fas fa-check"></i> {{ app.displayName }}</span>
+                } @else {
+                  <span class="app-chip off" [title]="'Can\'t open ' + app.displayName"><i class="fas fa-ban"></i> {{ app.displayName }}</span>
+                }
+              }
+              @if (areaExceptions(member) > 0) {
+                <span class="app-chip custom">{{ areaExceptions(member) }} custom</span>
+              }
+            </div>
+            <div class="row-action">
+              @if (member.role === 'Owner') {
+                <span class="text-muted small">Full access</span>
+              } @else if (isSelf(member)) {
+                <span class="text-muted small">Your own access</span>
+              } @else {
+                <a class="btn btn-label-secondary btn-sm" [routerLink]="['/users', member.id]">Manage access</a>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="text-muted py-3">No one matches “{{ search() }}”.</li>
+        }
+      </ul>
+    </div>
+  </div>
+}

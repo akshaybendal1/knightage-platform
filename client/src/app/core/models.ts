@@ -101,6 +101,8 @@ export interface ServiceCatalogEntry {
   displayName: string;
   url: string | null;
   provisioned: boolean;
+  /** False when an administrator has taken this app away from the signed-in user (Users screen). */
+  userAllowed: boolean;
 }
 
 export interface MyServicesResponse {
@@ -118,4 +120,62 @@ export interface AuthResult {
   email: string;
   displayName: string;
   role: string;
+}
+
+// ---- Users screen: people (knightage-identity) and their access to the apps (this app) ----
+
+export type ConfigurableRole = 'Admin' | 'Member' | 'Sales';
+
+export interface TeamMember {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAtUtc: string;
+  phoneNumber: string | null;
+}
+
+export interface AccessActionDef {
+  key: 'view' | 'add' | 'edit' | 'delete';
+  label: string;
+}
+
+export interface AccessFeatureDef {
+  key: string;
+  label: string;
+  group: string;
+  actions: AccessActionDef[];
+  /** What each role may do here when nothing is customised: every listed action, or none. */
+  defaults: Record<ConfigurableRole, boolean>;
+}
+
+export interface AccessAppDef {
+  service: string;
+  displayName: string;
+  /** The organization has this app (provisioned and not switched off by Knightage). */
+  enabled: boolean;
+  /** CRM's role defaults come from its Access Control screen when it could be read. */
+  roleDefaultsFrom: 'crm-access-control' | 'built-in';
+  features: AccessFeatureDef[];
+}
+
+export interface AccessCatalog {
+  roles: ConfigurableRole[];
+  apps: AccessAppDef[];
+}
+
+export interface UserAccessSummary {
+  userId: string;
+  apps: Record<string, boolean>;
+  areaExceptions: number;
+  updatedAtUtc: string;
+}
+
+export interface UserAccess {
+  userId: string;
+  /** Only the exceptions: "Crm" -> may open CRM, "Crm:leads:add" -> may add leads. */
+  overrides: Record<string, boolean>;
+  updatedAtUtc: string | null;
+  updatedByUserId: string | null;
 }

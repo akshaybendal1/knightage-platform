@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { CrmMigrationResult, MyServicesResponse, PagedTenants, Plan, Subscription, TenantDetail, TenantListFilters, TenantProvisioningResult } from './models';
+import { AccessCatalog, UserAccess, UserAccessSummary, CrmMigrationResult, MyServicesResponse, PagedTenants, Plan, Subscription, TenantDetail, TenantListFilters, TenantProvisioningResult } from './models';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +17,24 @@ export class PlatformApi {
       }
     }
     return this.http.get<PagedTenants>('/api/tenants', { params });
+  }
+
+  // ---- Users screen ----
+
+  getAccessCatalog() {
+    return this.http.get<AccessCatalog>('/api/access/catalog');
+  }
+
+  getAccessSummaries() {
+    return this.http.get<{ items: UserAccessSummary[] }>('/api/access/users');
+  }
+
+  getUserAccess(userId: string) {
+    return this.http.get<UserAccess>(`/api/access/users/${userId}`);
+  }
+
+  saveUserAccess(userId: string, overrides: Record<string, boolean>) {
+    return this.http.post<void>(`/api/access/users/${userId}`, { overrides });
   }
 
   getMyServices() {

@@ -1,0 +1,173 @@
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.add-card {
+  margin-bottom: 1rem;
+}
+
+.add-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  max-width: 720px;
+}
+
+.add-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+.list-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.list-tools .form-control {
+  max-width: 320px;
+}
+
+.list-tools > span {
+  white-space: nowrap;
+}
+
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.4fr) auto minmax(0, 2fr) auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.user-row:first-child {
+  border-top: 0;
+}
+
+.user-row.inactive .who,
+.user-row.inactive .apps {
+  opacity: 0.55;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.who {
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.email {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.badge-purple {
+  background: var(--badge-purple-bg);
+  color: var(--badge-purple-text);
+}
+
+.apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.app-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: var(--success-soft);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.app-chip .fa-check {
+  color: var(--success);
+}
+
+.app-chip.off {
+  background: var(--bg-surface-2);
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.app-chip.custom {
+  background: var(--warning-soft);
+}
+
+.row-action {
+  justify-self: end;
+  white-space: nowrap;
+}
+
+@media (max-width: 991.98px) {
+  .user-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .apps {
+    grid-column: 2 / -1;
+  }
+
+  .row-action {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .add-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .list-tools .form-control {
+    max-width: none;
+  }
+
+  .user-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .badges,
+  .apps,
+  .row-action {
+    grid-column: 2 / -1;
+  }
+}

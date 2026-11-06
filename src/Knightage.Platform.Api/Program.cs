@@ -45,6 +45,7 @@ builder.Services.AddScoped<ITenantServiceDatabaseRepository, TenantServiceDataba
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<ITenantMigrationRepository, TenantMigrationRepository>();
+builder.Services.AddScoped<IUserAccessRepository, UserAccessRepository>();
 builder.Services.AddScoped<ITenantDataService, TenantDataService>();
 builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
@@ -59,6 +60,7 @@ builder.Services.AddHttpClient("Crm", client =>
     client.Timeout = TimeSpan.FromSeconds(5);
 });
 builder.Services.AddScoped<ICrmCacheInvalidator, CrmCacheInvalidator>();
+builder.Services.AddScoped<ICrmRoleAccessClient, CrmRoleAccessClient>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");

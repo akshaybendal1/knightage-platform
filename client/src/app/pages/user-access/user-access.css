@@ -1,0 +1,246 @@
+:host {
+  display: block;
+  /* room for the save bar, so it never covers the last row */
+  padding-bottom: 4.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.person-card {
+  margin-bottom: 1rem;
+}
+
+.person {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.person h1 {
+  font-size: 1.4rem;
+  overflow-wrap: anywhere;
+}
+
+.who {
+  min-width: 0;
+}
+
+.person-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.role-pick .form-select {
+  min-width: 140px;
+}
+
+.badge-purple {
+  background: var(--badge-purple-bg);
+  color: var(--badge-purple-text);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.6rem;
+}
+
+.app-switches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.app-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin: 0;
+}
+
+.app-switch.muted {
+  cursor: default;
+  color: var(--text-muted);
+}
+
+.app-switch .form-check-input {
+  width: 2.2em;
+  height: 1.2em;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Changed from the role's default: what Save stores. */
+.app-switch.changed,
+.action-box.changed {
+  background: var(--warning-soft);
+  border-color: var(--warning);
+}
+
+.section-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.section-toggle .fa-chevron-down {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.section-toggle.collapsed .fa-chevron-down {
+  transform: rotate(-90deg);
+}
+
+.app-section {
+  margin-top: 0.5rem;
+}
+
+.app-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0.6rem;
+}
+
+.quick-set {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.group-name {
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-surface-2);
+}
+
+.feature-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.group-name + .feature-row {
+  border-top: 0;
+}
+
+.feature-name {
+  font-weight: 500;
+}
+
+.feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.action-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin: 0;
+  min-height: 34px;
+  user-select: none;
+}
+
+.action-box .form-check-input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.action-box.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.save-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 1rem;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.save-bar.visible {
+  display: flex;
+}
+
+.save-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* The shell's sidebar is fixed on wide screens: keep the bar clear of it. */
+@media (min-width: 992px) {
+  .save-bar {
+    left: 240px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .feature-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .person-controls {
+    width: 100%;
+  }
+}
+
+/* Bootstrap's form-switch reserves room on the left for a floated switch; here the switch sits in the row. */
+.app-switch .form-switch {
+  padding-left: 0;
+  min-height: 0;
+}
+
+.app-switch .form-switch .form-check-input {
+  float: none;
+  margin-left: 0;
+}

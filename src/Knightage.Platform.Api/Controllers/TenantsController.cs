@@ -19,6 +19,7 @@ public class TenantsController : ControllerBase
     private readonly IPlanRepository _planRepository;
     private readonly ITenantMigrationRepository _migrationRepository;
     private readonly ICrmCacheInvalidator _crmCacheInvalidator;
+    private readonly IUserAccessRepository _userAccessRepository;
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<TenantsController> _logger;
@@ -31,6 +32,7 @@ public class TenantsController : ControllerBase
         IPlanRepository planRepository,
         ITenantMigrationRepository migrationRepository,
         ICrmCacheInvalidator crmCacheInvalidator,
+        IUserAccessRepository userAccessRepository,
         IConfiguration configuration,
         IEmailSender emailSender,
         ILogger<TenantsController> logger)
@@ -42,6 +44,7 @@ public class TenantsController : ControllerBase
         _planRepository = planRepository;
         _migrationRepository = migrationRepository;
         _crmCacheInvalidator = crmCacheInvalidator;
+        _userAccessRepository = userAccessRepository;
         _configuration = configuration;
         _emailSender = emailSender;
         _logger = logger;
@@ -64,6 +67,26 @@ public class TenantsController : ControllerBase
             ? Array.Empty<Core.Models.TenantServiceDatabase>()
             : (await _databaseRepository.GetByTenantIdAsync(tenant.Id)).ToArray();
 
+        // Whether this user may open each app (the Users screen); the Owner always may.
+        var appExceptions = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        if (!User.IsInRole("Owner") && Guid.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value, out var userId))
+        {
+            try
+            {
+                foreach (var row in await _userAccessRepository.GetForUserAsync(organizationId, userId))
+                {
+                    if (!row.AccessKey.Contains(':'))
+                    {
+                        appExceptions[row.AccessKey] = row.IsAllowed;
+                    }
+                }
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208)
+            {
+                // sql/009 not applied yet: nobody has exceptions.
+            }
+        }
+
         var services = ServiceCatalog.Entries.Select(entry => new
         {
             key = entry.Key,
@@ -72,6 +95,7 @@ public class TenantsController : ControllerBase
             provisioned = databases.Any(d =>
                 string.Equals(d.ServiceName, entry.Key, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(d.Status, "Provisioned", StringComparison.OrdinalIgnoreCase)),
+            userAllowed = !appExceptions.TryGetValue(entry.Key, out var allowed) || allowed,
         });
 
         var plan = tenant?.PlanId is Guid planId ? await _planRepository.GetByIdAsync(planId) : null;

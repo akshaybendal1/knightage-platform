@@ -1,0 +1,170 @@
+<a routerLink="/users" class="back-link"><i class="fas fa-arrow-left"></i> Users</a>
+
+@if (loading()) {
+  <p class="text-muted mt-3">Loading…</p>
+} @else if (notFound()) {
+  <div class="alert alert-warning mt-3">This user isn't in your organization.</div>
+} @else if (member(); as person) {
+  <div class="card card-round person-card">
+    <div class="card-body person">
+      <div class="who">
+        <h1 class="mb-1">{{ person.displayName }}</h1>
+        <div class="text-muted small">{{ person.email }}@if (person.phoneNumber) { · {{ person.phoneNumber }} }</div>
+      </div>
+      @if (editable()) {
+        <div class="person-controls">
+          <div class="role-pick">
+            <label class="form-label small mb-1" for="role">Role</label>
+            <div class="d-flex gap-2">
+              <select id="role" class="form-select form-select-sm" [(ngModel)]="roleDraft" [disabled]="savingRole()">
+                <option value="Admin">Admin</option>
+                <option value="Member">Member</option>
+                <option value="Sales">Sales</option>
+              </select>
+              @if (roleDraft !== person.role) {
+                <button type="button" class="btn btn-primary btn-sm" [disabled]="savingRole()" (click)="saveRole()">
+                  {{ savingRole() ? 'Saving…' : 'Change role' }}
+                </button>
+              }
+            </div>
+          </div>
+          <div>
+            <span class="form-label small mb-1 d-block">Sign-in</span>
+            <button type="button" class="btn btn-sm" [class.btn-label-secondary]="person.isActive" [class.btn-primary]="!person.isActive"
+                    [disabled]="savingStatus()" (click)="toggleActive()">
+              {{ person.isActive ? 'Switch off' : 'Switch back on' }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <span class="badge" [class.badge-purple]="isOwner()" [class.badge-primary]="!isOwner()">{{ person.role }}</span>
+      }
+    </div>
+    @if (personMessage()) {
+      <div class="card-footer small">{{ personMessage() }}</div>
+    }
+    @if (!person.isActive) {
+      <div class="card-footer small text-muted">Switched off: they can't sign in to any app. Their access below is kept for when you switch them back on.</div>
+    }
+  </div>
+
+  @if (isOwner()) {
+    <div class="alert alert-info">The owner always has full access to every app. It can't be limited.</div>
+  } @else if (isSelf()) {
+    <div class="alert alert-info">You can't change your own access. Ask the owner or another admin.</div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+  }
+
+  <h2 class="section-title">Apps</h2>
+  <div class="card card-round">
+    <div class="card-body app-switches">
+      @for (app of enabledApps(); track app.service) {
+        <label class="app-switch" [class.changed]="changed(app.service)">
+          <span class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" [checked]="canOpen(app)" [disabled]="!editable()"
+                   (change)="setApp(app, $any($event.target).checked)" />
+          </span>
+          <span>
+            <span class="fw-bold">{{ app.displayName }}</span>
+            <span class="d-block small text-muted">{{ canOpen(app) ? 'Can open it' : "Can't open it" }}</span>
+          </span>
+        </label>
+      }
+      @for (app of disabledApps(); track app.service) {
+        <div class="app-switch muted">
+          <i class="fas fa-lock"></i>
+          <span>
+            <span class="fw-bold">{{ app.displayName }}</span>
+            <span class="d-block small text-muted">Not enabled for your organization</span>
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  @for (app of enabledApps(); track app.service) {
+    <section class="app-section">
+      <div class="app-head">
+        <h2 class="section-title mb-0">
+          <button type="button" class="section-toggle" [class.collapsed]="isCollapsed(app)" [attr.aria-expanded]="!isCollapsed(app)" (click)="toggleCollapsed(app)">
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            <span>What they can do in {{ app.displayName }}</span>
+            @if (appExceptionCount(app) > 0) {
+              <span class="badge badge-warning">{{ appExceptionCount(app) }} changed</span>
+            }
+          </button>
+        </h2>
+        @if (editable() && canOpen(app) && !isCollapsed(app)) {
+          <div class="quick-set" role="group" [attr.aria-label]="'Set all of ' + app.displayName">
+            <button type="button" class="btn btn-label-secondary btn-sm" (click)="setAll(app, 'all')">Everything</button>
+            <button type="button" class="btn btn-label-secondary btn-sm" (click)="setAll(app, 'view')">View only</button>
+            <button type="button" class="btn btn-label-secondary btn-sm" (click)="setAll(app, 'defaults')">Role defaults</button>
+          </div>
+        }
+      </div>
+
+      @if (isCollapsed(app)) {
+      } @else if (!canOpen(app)) {
+        <p class="text-muted small">They can't open {{ app.displayName }}. What's set below is kept for when you turn it back on.</p>
+      } @else {
+        @if (app.service === 'Crm' && app.roleDefaultsFrom === 'crm-access-control') {
+          <p class="text-muted small mb-2">Role defaults follow CRM's Access Control settings for the {{ role() }} role.</p>
+        } @else if (app.service === 'Crm') {
+          <p class="text-muted small mb-2">CRM couldn't be asked for its Access Control settings, so the standard role defaults are shown.</p>
+        }
+        <div class="card card-round">
+          <div class="card-body p-0">
+            @for (group of groups(app); track group.name) {
+              <div class="group-name">{{ group.name }}</div>
+              @for (feature of group.features; track feature.key) {
+                <div class="feature-row">
+                  <div class="feature-name">
+                    {{ feature.label }}
+                    <span class="d-block small text-muted">{{ roleDefaultText(app, feature) }}</span>
+                  </div>
+                  <div class="feature-actions">
+                    @for (action of feature.actions; track action.key) {
+                      <label class="action-box" [class.changed]="actionChanged(app, feature, action.key)"
+                             [class.disabled]="action.key !== 'view' && !value(app, feature, 'view')">
+                        <input class="form-check-input" type="checkbox"
+                               [checked]="value(app, feature, action.key)"
+                               [disabled]="!editable() || (action.key !== 'view' && !value(app, feature, 'view'))"
+                               (change)="toggle(app, feature, action.key, $any($event.target).checked)" />
+                        {{ action.label }}
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  @if (editable()) {
+    <div class="save-bar" [class.visible]="dirty() || savedMessage()">
+      @if (savedMessage() && !dirty()) {
+        <span class="small"><i class="fas fa-check text-success"></i> {{ savedMessage() }}</span>
+      } @else {
+        <span class="small">
+          Unsaved changes.
+          {{ exceptionCount() === 0 ? 'Everything will match the ' + role() + ' role.' : exceptionCount() + ' differ from the ' + role() + ' role.' }}
+        </span>
+        <span class="save-actions">
+          <button type="button" class="btn btn-label-secondary btn-sm" [disabled]="saving()" (click)="discard()">Discard</button>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="saving()" (click)="save()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+        </span>
+      }
+    </div>
+  }
+} @else if (errorMessage()) {
+  <div class="alert alert-danger py-2 mt-3">
+    {{ errorMessage() }}
+    <button type="button" class="btn btn-link btn-sm p-0 ms-2" (click)="load()">Try again</button>
+  </div>
+}

@@ -17,6 +17,12 @@
           <i class="fas fa-grip"></i>
           <span>Services</span>
         </a>
+        @if (auth.currentUser()?.role === 'Owner' || auth.currentUser()?.role === 'Admin') {
+          <a routerLink="/users" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
+            <i class="fas fa-user-shield"></i>
+            <span>Users</span>
+          </a>
+        }
         @if (auth.currentUser()?.role === 'PlatformAdmin') {
           <a routerLink="/tenants" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
             <i class="fas fa-building"></i>

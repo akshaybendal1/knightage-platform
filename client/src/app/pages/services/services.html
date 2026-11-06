@@ -13,13 +13,15 @@
         <button
           type="button"
           class="service-tile"
-          [class.disabled]="!service.provisioned || !service.url"
-          [disabled]="!service.provisioned || !service.url"
+          [class.disabled]="!service.provisioned || !service.url || !service.userAllowed"
+          [disabled]="!service.provisioned || !service.url || !service.userAllowed"
           (click)="open(service)"
         >
           <i class="fas" [class]="iconClass(service.key)"></i>
           <span class="service-name">{{ service.displayName }}</span>
-          @if (service.provisioned && service.url) {
+          @if (service.provisioned && !service.userAllowed) {
+            <span class="service-status-note">Your administrator hasn't given you access</span>
+          } @else if (service.provisioned && service.url) {
             <span class="badge badge-success">Active</span>
           } @else if (service.provisioned) {
             <span class="service-status-note">Available soon</span>

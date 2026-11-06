@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
 import { platformAdminGuard } from './core/platform-admin-guard';
+import { orgAdminGuard } from './core/org-admin-guard';
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
@@ -24,6 +25,18 @@ export const routes: Routes = [
       {
         path: 'services',
         loadComponent: () => import('./pages/services/services').then((m) => m.Services),
+      },
+      {
+        path: 'users',
+        canActivate: [orgAdminGuard],
+        title: 'Users',
+        loadComponent: () => import('./pages/users/users').then((m) => m.Users),
+      },
+      {
+        path: 'users/:id',
+        canActivate: [orgAdminGuard],
+        title: 'User access',
+        loadComponent: () => import('./pages/user-access/user-access').then((m) => m.UserAccess),
       },
       {
         path: 'tenants',

@@ -57,7 +57,7 @@ export class Services implements OnInit {
   }
 
   open(service: ServiceCatalogEntry): void {
-    if (!service.provisioned || !service.url || !this.auth.token) {
+    if (!service.provisioned || !service.url || !service.userAllowed || !this.auth.token) {
       return;
     }
     showAppSwitchScreen(service.displayName);

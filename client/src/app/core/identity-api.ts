@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AppConfig } from './app-config';
+import { TeamMember } from './models';
 
 export interface OrganizationSummary {
   id: string;
@@ -24,5 +25,22 @@ export class IdentityApi {
 
   getMyOrganization() {
     return this.http.get<OrganizationSummary>(`${this.appConfig.identityBaseUrl}/api/organizations/me`);
+  }
+
+  // The organization's people -- Owner / Admin only (identity's TeamController).
+  getTeam() {
+    return this.http.get<TeamMember[]>(`${this.appConfig.identityBaseUrl}/api/team`);
+  }
+
+  addTeamMember(payload: { displayName: string; email: string; password: string; role: string; phoneNumber?: string }) {
+    return this.http.post<TeamMember>(`${this.appConfig.identityBaseUrl}/api/team`, payload);
+  }
+
+  updateRole(userId: string, role: string) {
+    return this.http.post<void>(`${this.appConfig.identityBaseUrl}/api/team/${userId}/role`, { role });
+  }
+
+  setActive(userId: string, isActive: boolean) {
+    return this.http.post<void>(`${this.appConfig.identityBaseUrl}/api/team/${userId}/status`, { isActive });
   }
 }
