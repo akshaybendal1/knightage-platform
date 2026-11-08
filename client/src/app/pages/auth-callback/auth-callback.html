@@ -1,5 +1,6 @@
-@if (errorMessage) {
-  <div class="alert alert-danger py-2">{{ errorMessage }}</div>
+@if (errorMessage()) {
+  <div class="alert alert-danger py-2">{{ errorMessage() }}</div>
+  <a href="/login" class="btn btn-primary btn-sm">Go to sign in</a>
 } @else {
   <!-- index.html's loading screen, so arriving from another Knightage app reads as one "Opening ..." step. -->
   <div class="boot-splash" role="status" aria-live="polite">

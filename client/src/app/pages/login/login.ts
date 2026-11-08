@@ -42,6 +42,11 @@ export class Login implements OnInit, AfterViewInit {
   readonly isNative = Capacitor.isNativePlatform();
   private googleNativeInit: Promise<void> | null = null;
 
+  /** Shown above the form when the last session ended by itself (see Auth.sessionEndedNotice). */
+  get sessionNotice(): string | null {
+    return this.auth.sessionEndedNotice();
+  }
+
   constructor(
     private readonly auth: Auth,
     private readonly router: Router,

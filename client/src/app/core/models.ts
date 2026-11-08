@@ -115,11 +115,16 @@ export interface MyServicesResponse {
 export interface AuthResult {
   token: string;
   expiresAtUtc: string;
+  /** Seconds the token has left by Identity's clock (absent on a token handed over via ?token=). */
+  expiresInSeconds?: number;
   userId: string;
   organizationId: string;
   email: string;
   displayName: string;
   role: string;
+  /** Traded for the next token before this one expires (absent on a token handed over via ?token=). */
+  refreshToken?: string | null;
+  refreshTokenExpiresAtUtc?: string | null;
 }
 
 // ---- Users screen: people (knightage-identity) and their access to the apps (this app) ----

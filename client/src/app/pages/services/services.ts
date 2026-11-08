@@ -56,12 +56,13 @@ export class Services implements OnInit {
     return SERVICE_ICONS[key] ?? 'fa-cube';
   }
 
-  open(service: ServiceCatalogEntry): void {
+  async open(service: ServiceCatalogEntry): Promise<void> {
     if (!service.provisioned || !service.url || !service.userAllowed || !this.auth.token) {
       return;
     }
     showAppSwitchScreen(service.displayName);
-    window.location.href = `${service.url}/auth-callback?token=${encodeURIComponent(this.auth.token)}`;
+    // A one-time code the app redeems for a session of its own (Auth.handoffUrl()).
+    window.location.href = await this.auth.handoffUrl(service.url);
   }
 
   isRequesting(key: string): boolean {

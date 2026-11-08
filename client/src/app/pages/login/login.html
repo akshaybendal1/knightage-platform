@@ -9,6 +9,9 @@
         <h2 class="login-heading">
           {{ mode() === 'register' ? 'Create your organization' : isNative ? 'Sign in to CRM, Inventory and Accounting' : 'Log in to Knightage Platform' }}
         </h2>
+        @if (sessionNotice) {
+          <div class="alert alert-info py-2" role="status">{{ sessionNotice }}</div>
+        }
         <form (ngSubmit)="submit()">
           @if (mode() === 'register') {
             <div class="form-group mb-3">
